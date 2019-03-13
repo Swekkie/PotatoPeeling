@@ -2,7 +2,7 @@ public class Vector2D {
     
     private Point2D start;
     private Point2D end;
-    private double slope;
+    private double angle; // in rad, between -pi and pi
     
     public Vector2D(){
         this.start = null;
@@ -12,6 +12,7 @@ public class Vector2D {
     public Vector2D(Point2D start, Point2D end) {
         this.start = start;
         this.end = end;
+        calculateAngle();
     }
 
     public Point2D getStart() {
@@ -22,7 +23,7 @@ public class Vector2D {
         this.start = start;
         // calculate slope if End is not null
         if(end!=null)
-            calculateSlope();
+            calculateAngle();
     }
 
     public Point2D getEnd() {
@@ -32,13 +33,21 @@ public class Vector2D {
     public void setEnd(Point2D end) {
         this.end = end;
         if(end!=null)
-            calculateSlope();
+            calculateAngle();
     }
 
-    public double getSlope(){
-        return slope;
+    public double getAngle(){
+        return angle;
     }
-    private void calculateSlope(){
-         slope = (end.getY()- start.getY())/(end.getX()-start.getX());
+    public void calculateAngle() {
+        double deltaX = end.getX()-start.getX();
+        double deltaY = end.getY()-start.getY();
+        angle = Math.atan(deltaY / deltaX);
+        if(deltaX <0){
+            if(deltaY>=0)
+                angle += Math.PI;
+            else
+                angle -= Math.PI;
+        }
     }
 }

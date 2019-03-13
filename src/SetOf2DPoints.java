@@ -17,6 +17,9 @@ public class SetOf2DPoints {
         pointList.add(p);
     }
 
+    public List<Point2D> getPointList() {
+        return pointList;
+    }
 
     @Override
     public String toString() {
@@ -27,7 +30,7 @@ public class SetOf2DPoints {
         return s;
     }
 
-    public void writeOuput(String pathName, String data) throws IOException {
+    public void writePointsToFile(String pathName, String data) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File(pathName)));
         for(Point2D p: pointList) {
             bw.write(p.toString());
@@ -35,4 +38,9 @@ public class SetOf2DPoints {
         }
         bw.close();
     }
+
+    public void solveAlgorithm(){
+
+    }
+
 }

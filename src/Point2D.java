@@ -1,3 +1,7 @@
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 public class Point2D {
     private double x, y;
 
@@ -27,4 +31,13 @@ public class Point2D {
     public void setY(double y) {
         this.y = y;
     }
+
+    @Override
+    public String toString() {
+        DecimalFormat df = new DecimalFormat("#.00",
+                DecimalFormatSymbols.getInstance(Locale.US));
+        return df.format(x) + ";" + df.format(y);
+    }
+
+
 }

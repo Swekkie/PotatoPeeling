@@ -1,7 +1,35 @@
+import java.io.IOException;
+import java.util.Random;
+
 public class Application {
 
     public static void main(String [] args){
-        System.out.println("Hello World");
 
+        Random random = new Random();
+
+        int numberOfPoints = 2;
+
+        // data input
+        SetOf2DPoints setOfPoints = new SetOf2DPoints();
+
+        // generate random points between (0,0) and (20,20)
+        int xRange = 20;
+        int yRange = 20;
+
+        for (int i = 0; i < numberOfPoints; i++){
+            double randomX = random.nextDouble() * xRange;
+            double randomY = random.nextDouble() * yRange;
+            Point2D p = new Point2D(randomX,randomY);
+            setOfPoints.addPoint(p);
+        }
+
+        setOfPoints.solveAlgorithm();
+
+        try {
+            setOfPoints.writePointsToFile("D:/Masterproef/data.txt",setOfPoints.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 }
