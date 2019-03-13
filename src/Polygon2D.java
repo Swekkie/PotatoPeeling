@@ -3,24 +3,23 @@ import java.util.List;
 
 public class Polygon2D {
 
-    private List<Vector2D> vector2DList;
+    private List<Point2D> point2DList;
 
     public Polygon2D(){
-        vector2DList = new ArrayList<>();
+        point2DList = new ArrayList<>();
     }
 
     public Polygon2D(Polygon2D polygon){
-        vector2DList = new ArrayList<>(polygon.getVector2DList());
+        point2DList = new ArrayList<>(polygon.getPoint2DList());
     }
 
     public void addPoint2DToEnd(Point2D point){
-        Vector2D last = vector2DList.get(vector2DList.size()-1);
-        Point2D beginPointPolygon = last.getEnd();
-        last.setEnd(point);
-        vector2DList.add(new Vector2D(point,beginPointPolygon));
-
+        point2DList.add(point);
     }
 
+    public int numberOfPoints(){
+        return point2DList.size();
+    }
     public double calculateArea() {
         // TODO
         return 0;
@@ -37,11 +36,20 @@ public class Polygon2D {
         return true;
     }
 
-    public List<Vector2D> getVector2DList() {
-        return vector2DList;
+    public List<Point2D> getPoint2DList() {
+        return point2DList;
     }
 
     public void setVector2DList(List<Vector2D> vector2DList) {
-        this.vector2DList = vector2DList;
+        this.point2DList = point2DList;
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        for (Point2D p : point2DList){
+            s += (p.toString() + "\n");
+        }
+        return s;
     }
 }

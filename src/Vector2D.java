@@ -2,7 +2,7 @@ public class Vector2D {
     
     private Point2D start;
     private Point2D end;
-    private double angle; // in rad, between -pi and pi
+    private double angle; // in rad, between 0 and 2pi
     
     public Vector2D(){
         this.start = null;
@@ -49,5 +49,12 @@ public class Vector2D {
             else
                 angle -= Math.PI;
         }
+        if(angle<0)
+            angle += (2 * Math.PI);
+    }
+
+    @Override
+    public String toString() {
+        return "Vector met start: " + start + " en eind " + end;
     }
 }

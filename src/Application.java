@@ -7,12 +7,12 @@ public class Application {
 
         Random random = new Random();
 
-        int numberOfPoints = 2;
+        int numberOfPoints = 20;
 
         // data input
         SetOf2DPoints setOfPoints = new SetOf2DPoints();
 
-        // generate random points between (0,0) and (20,20)
+        // generate set of points between (0,0) and (20,20)
         int xRange = 20;
         int yRange = 20;
 
@@ -23,8 +23,13 @@ public class Application {
             setOfPoints.addPoint(p);
         }
 
+
+
+        // solve for the given set
         setOfPoints.solveAlgorithm();
 
+
+        // write output
         try {
             setOfPoints.writePointsToFile("D:/Masterproef/data.txt",setOfPoints.toString());
         } catch (IOException e) {
