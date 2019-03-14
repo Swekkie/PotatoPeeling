@@ -32,22 +32,16 @@ public class Point2D {
         this.y = y;
     }
 
-    public double getAngleOfVectorTo (Point2D p){
-
-        double deltaX = p.getX()-this.x;
-        double deltaY = p.getY()-this.y;
-        double angle = Math.atan(deltaY / deltaX);
-        if(deltaX <0){
-            if(deltaY>=0)
-                angle += Math.PI;
-            else
-                angle -= Math.PI;
-        }
-
-        if(angle<0)
-            angle += (2 * Math.PI);
-
-        return angle;
+    // on left of vector = on the counter clockwise half of the vector (positive cross product)
+    public boolean isOnLeftOfVector(Point2D pointA, Point2D pointB){
+        double xA = pointA.getX();
+        double yA = pointA.getY();
+        double xB = pointB.getX();
+        double yB = pointB.getY();
+        double crossProduct = (xB-xA)*(this.y-yA)-(yB-yA)*(this.x-xA);
+        if(crossProduct>0)
+            return true;
+        return false;
     }
 
     @Override

@@ -15,6 +15,9 @@ public class SetOf2DPoints {
         this.pointList = new ArrayList<>();
     }
 
+    public SetOf2DPoints(List<Point2D> points) {
+        this.pointList = new ArrayList<>(points);
+    }
     public void addPoint (Point2D p){
         pointList.add(p);
     }
@@ -42,63 +45,70 @@ public class SetOf2DPoints {
     }
 
     public void solveAlgorithm(){
+        System.out.println(this);
         // search multiple times for different convex skulls
-        for (int i = 0; i<1; i++){
-            List<Point2D> usablePoints = new ArrayList<>(pointList); //
-            Polygon2D polygon = new Polygon2D();
+        List<Polygon2D> foundPolygons = new ArrayList<>();
+        for (int i = 0; i<25; i++){
+            Polygon2D polygon = searchForPolygonAttempt();
+            System.out.println("-----NEXTAAAAAA-----");
+            System.out.println(polygon);
+            if(polygon.isValid())
+                foundPolygons.add(polygon);
+        }
 
-            // pick random beginpair
-            Collections.shuffle(usablePoints);
-            Point2D start = usablePoints.remove(0);
-            Point2D end = usablePoints.remove(0);
-            polygon.addPoint2DToEnd(start);
-            polygon.addPoint2DToEnd(end);
+    }
 
-            System.out.println("Start: " + start + "\n" + "End: " + end);
-            double angle = start.getAngleOfVectorTo(end);
-            double temp = angle;
-            // remove points that are eliminated because of the fact that we want convex polygons
-            // we choose counter clockwise
-            ListIterator<Point2D> iter = usablePoints.listIterator();
+    public Polygon2D searchForPolygonAttempt(){
+        List<Point2D> usablePoints = new ArrayList<>(pointList); //
+        Polygon2D polygon = new Polygon2D();
+
+        // pick random beginpair
+        Collections.shuffle(usablePoints);
+        Point2D start = usablePoints.remove(0);
+        Point2D end = usablePoints.remove(0);
+        polygon.addPoint2DToEnd(start);
+        polygon.addPoint2DToEnd(end);
+
+        System.out.println("Start: " + start + "\n" + "End: " + end);
+
+        // remove points that are eliminated because of the fact that we want convex polygons
+        // we choose counter clockwise, points on the left side (left of rising vector) are usable
+        ListIterator<Point2D> iter = usablePoints.listIterator();
+        while(iter.hasNext()){
+            if(!iter.next().isOnLeftOfVector(start,end)){
+                iter.remove();
+            }
+        }
+
+
+        while(!usablePoints.isEmpty()) {
+            // pick next point
+            Point2D first = polygon.getFirstPoint();
+            Point2D secondLast = polygon.getPoint2DList().get(polygon.numberOfPoints()-1);
+            Point2D lastAdded = usablePoints.remove(0);
+            polygon.addPoint2DToEnd(lastAdded);
+
+            iter = usablePoints.listIterator();
             while(iter.hasNext()){
-                if(!pointIsUsableCounterClockwise(end, iter.next(), temp)){
+                Point2D p = iter.next();
+                if(!p.isOnLeftOfVector(secondLast,lastAdded)){
+                    // points on "clockwise" side of the vector
                     iter.remove();
                 }
-            }
-
-            while(!usablePoints.isEmpty()) {
-                // pick next point
-                // TODO check if point makes polygon enclosing other points
-                Point2D lastAdded = usablePoints.remove(0);
-                polygon.addPoint2DToEnd(lastAdded);
-
-                Point2D secondLast = polygon.getPoint2DList().get(polygon.numberOfPoints()-2);
-                angle = secondLast.getAngleOfVectorTo(lastAdded);
-                // calculate new angle from last vector
-                iter = usablePoints.listIterator();
-                while(iter.hasNext()){
-                    if(!pointIsUsableCounterClockwise(end, iter.next(), angle)){
-                        iter.remove();
+                else{
+                    if(!p.isOnLeftOfVector(first,lastAdded)){
+                        // points inside polygon with new added point
+                        // remove new added point and STOP CURRENT POLYGON SEARCH
+                        polygon.removeLastPoint();
+                        return polygon;
                     }
                 }
-
             }
-            System.out.println("FOUND POLYGON");
-            System.out.println(polygon);
+
         }
+        return polygon;
     }
 
-    private boolean pointIsUsableCounterClockwise(Point2D refPoint, Point2D pointToCheck, double angle) {
-        double angleToCheck = refPoint.getAngleOfVectorTo(pointToCheck);
-        if(angle<Math.PI){
-            if(angle<=angleToCheck && angleToCheck<angle+Math.PI)
-                return true;
-        }
-        else{
-            if(angleToCheck>angle || angleToCheck<angle)
-                return true;
-        }
-        return false;
-    }
+
 
 }

@@ -20,6 +20,13 @@ public class Polygon2D {
     public int numberOfPoints(){
         return point2DList.size();
     }
+
+    public Point2D getFirstPoint(){
+        return point2DList.get(0);
+    }
+    public void removeLastPoint(){
+        point2DList.remove(point2DList.size()-1);
+    }
     public double calculateArea() {
         // TODO
         return 0;
@@ -30,10 +37,23 @@ public class Polygon2D {
         return true;
     }
 
-    // a polygon is a skull if it doesnt enclose any points
+
+    // a polygon is a skull if it does not enclose any points
     public boolean isSkull (List<Point2D> pointsToCheck) {
-        // TODO
+        // DONT CHECK POINTS THAT ARE PART OF THE POLYGON
+    
+
+
         return true;
+    }
+
+
+    // a polygon is valid when it has at least 3 points
+    public boolean isValid(){
+        if(point2DList.size()>2)
+            return true;
+        else
+            return false;
     }
 
     public List<Point2D> getPoint2DList() {
@@ -46,10 +66,13 @@ public class Polygon2D {
 
     @Override
     public String toString() {
-        String s = "";
-        for (Point2D p : point2DList){
-            s += (p.toString() + "\n");
+        if(isValid()) {
+            String s = "";
+            for (Point2D p : point2DList) {
+                s += (p.toString() + "\n");
+            }
+            return s;
         }
-        return s;
+        else return "Polygon is invalid";
     }
 }
