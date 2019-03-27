@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,7 +9,7 @@ public class SetOf2DPoints {
 
     private List<Point2D> pointList;
     private List<Polygon2D> foundPolygons;
-    private boolean[][] pairChecked;
+    private List<Point2D> checkedStartpoints;
     public SetOf2DPoints() {
         this.pointList = new ArrayList<>();
         this.foundPolygons = new ArrayList<>();
@@ -72,17 +71,17 @@ public class SetOf2DPoints {
     public void recursiveSolution(){
         // search for all convex, empty polygons
 
-        // if a search from a certain pair (starting edge) is finished, the largest polygon containing that edge (order is important)
-        // is already found, so if we add a point and make that edge in another search, we can stop the search for that polygon
-        pairChecked = new boolean[pointList.size()][pointList.size()];
+        checkedStartpoints = new ArrayList<>();
         // generate all possible starting pairs (0-1 is not the same as 1-0, from point 0 to point 1)
-        for(int i = 0; i<pointList.size();i++){
-            for(int j = 0; j<pointList.size();j++){
-                if(i != j){
-                    startSearchFromPair(pointList.get(i),pointList.get(j));
-                    pairChecked[i][j] = true;
-                }
+        for(int i = 0; i<pointList.size()-1;i++){ // -1 because all possible polygons with last point have already been searched
+            for(int j = i+1; j<pointList.size();j++){
+                // i is index of start point, j is index of second point (still no polygon formed with 2 points)
+                startSearchFromPair(pointList.get(i),pointList.get(j));
             }
+
+            // all polygons containing point i have been searched
+            checkedStartpoints.add(pointList.get(i));
+
         }
 
         // check results
@@ -95,8 +94,6 @@ public class SetOf2DPoints {
         });
 
         System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
-
-
     }
 
     public void startSearchFromPair(Point2D p1, Point2D p2){
@@ -104,6 +101,7 @@ public class SetOf2DPoints {
         Polygon2D polygon = new Polygon2D();
         polygon.addPoint2DToEnd(p1);
         polygon.addPoint2DToEnd(p2);
+
         // recursively add points to the polygon
         addPointRecursive(polygon);
     }
@@ -123,13 +121,9 @@ public class SetOf2DPoints {
             // if it is convex and empty, recursive search for new point
             // if not, test for the next point
             Polygon2D temp = new Polygon2D(polygon);
-            Point2D beforeLast = temp.getPoint2DList().get(temp.numberOfPoints()-1);
             temp.addPoint2DToEnd(newPoint);
 
-            int indexInListBeforeLast = pointList.indexOf(beforeLast);
-            int indexInListLast = pointList.indexOf(newPoint);
-
-            if(!pairChecked[indexInListBeforeLast][indexInListLast]) {
+            if(!checkedStartpoints.contains(newPoint)) {
                 if (temp.isConvex()) {
                     if (temp.isEmpty(pointsLeft)) {
                         addPointRecursive(temp);

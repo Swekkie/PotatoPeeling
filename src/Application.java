@@ -43,7 +43,7 @@ public class Application {
 
     public static List<Point2D> generatePoints(){
         Random random = new Random(6);
-        int numberOfPoints = 100;
+        int numberOfPoints = 200;
 
         int xRange = 40;
         int yRange = 40;
