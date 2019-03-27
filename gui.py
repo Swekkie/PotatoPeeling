@@ -5,8 +5,8 @@ import matplotlib.animation as animation
 
 fig, ax = plt.subplots()
 
-path1 = "D:/Masterproef/pointset.txt"
-path2 = "D:/Masterproef/foundpolygons.txt"
+path1 = "D:/Masterproef/PotatoPeeling/pointset.txt"
+path2 = "D:/Masterproef/PotatoPeeling/foundpolygons.txt"
 
 with open(path1,"r") as f:
     points = f.read().splitlines()
@@ -22,10 +22,11 @@ for point in points:
 	y.append(float(xyvalues[1][:-1]))
 	print(xyvalues[0] +"		"+ xyvalues[1][:-1])
 
+
 ax.scatter(x,y)
 axes = fig.gca();
-axes.set_xlim([0,20])
-axes.set_ylim([0,20])
+axes.set_xlim([0,40])
+axes.set_ylim([0,40])
 
 #add labels
 for i in range(0,len(x)) :
@@ -64,7 +65,9 @@ def switchBetweenPolygons(num, polygonList):
 
     return polygonList
 
-ani = animation.FuncAnimation(fig, switchBetweenPolygons, numberOfPolygons, fargs=(polygonList,), interval=400, blit = False)
+ani = animation.FuncAnimation(fig, switchBetweenPolygons, numberOfPolygons, fargs=(polygonList,), interval=500, blit = False)
+#comment above line and uncomment line below to show biggest polygon only
+#polygonList[0].set_visible(True)
 
 
 plt.show()
