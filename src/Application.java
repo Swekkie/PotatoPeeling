@@ -7,32 +7,15 @@ public class Application {
 
     public static void main(String[] args) {
 
-
-/*
-        // generate set of points
-        List<Point2D> temp = new ArrayList<>();
-        temp.add(new Point2D(1,9));
-        temp.add(new Point2D(1.5,6.5));
-        temp.add(new Point2D(0,5));
-        temp.add(new Point2D(1.5,2));
-        temp.add(new Point2D(5,2.5));
-        temp.add(new Point2D(7,2));
-        temp.add(new Point2D(10,4));
-        temp.add(new Point2D(9,7));
-        temp.add(new Point2D(7,9.5));
-        temp.add(new Point2D(4.5,8.5));
-*/
-
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints());
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints3());
 
         // solve for the given set
         setOfPoints.solveAlgorithm();
 
-
         // write output
         try {
             setOfPoints.writePointsToFile("D:/Masterproef/PotatoPeeling/pointset.txt");
-            setOfPoints.writeFiftyLargestPolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
+            setOfPoints.writePolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,8 +23,7 @@ public class Application {
 
     }
 
-
-    public static List<Point2D> generatePoints(){
+    public static List<Point2D> generatePoints1(){
         Random random = new Random(6);
         int numberOfPoints = 200;
 
@@ -75,4 +57,56 @@ public class Application {
         return tempList;
     }
 
+    public static List<Point2D> generatePoints2(){
+
+
+        List<Point2D> tempList = new ArrayList<>();
+
+
+        Point2D p1 = new Point2D(1,9);
+        Point2D p2 = new Point2D(1.5,6.5);
+        Point2D p3 = new Point2D(1.5,2);
+        Point2D p4 = new Point2D(0,5);
+        Point2D p5 = new Point2D(5,2.5);
+        Point2D p6 = new Point2D(7,2);
+        Point2D p7 = new Point2D(10,4);
+        Point2D p8 = new Point2D(5,5);
+        Point2D p9 = new Point2D(9,7);
+        Point2D p10 = new Point2D(7,9.5);
+        Point2D p11 = new Point2D(4.5,8.5);
+
+        tempList.add(p1);
+        tempList.add(p2);
+        tempList.add(p3);
+        tempList.add(p4);
+        tempList.add(p5);
+        tempList.add(p6);
+        tempList.add(p7);
+        tempList.add(p8);
+        tempList.add(p9);
+        tempList.add(p10);
+        tempList.add(p11);
+        return tempList;
+    }
+
+    public static List<Point2D> generatePoints3(){
+        Random random = new Random(6);
+        int numberOfPoints = 500;
+
+        int xRange = 40;
+        int yRange = 40;
+
+        List<Point2D> tempList = new ArrayList<>();
+
+        for (int i = 0; i < numberOfPoints; i++) {
+            double randomX = random.nextDouble();
+            double randomY = random.nextDouble();
+            randomX = randomX * xRange;
+            randomY = randomY * yRange;
+
+            Point2D p = new Point2D(randomX, randomY);
+            tempList.add(p);
+        }
+        return tempList;
+    }
 }

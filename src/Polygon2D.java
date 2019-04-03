@@ -6,7 +6,7 @@ import java.util.List;
 public class Polygon2D {
 
     private double xMax, xMin, yMax, yMin;
-    private List<Point2D> point2DList;
+    public List<Point2D> point2DList;
 
     public Polygon2D() {
         point2DList = new ArrayList<>();
@@ -30,7 +30,6 @@ public class Polygon2D {
     public void removeLastPoint() {
         point2DList.remove(point2DList.size() - 1);
     }
-
 
     public double calculateArea() {
         // shoelace algorithm

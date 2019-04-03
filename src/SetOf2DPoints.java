@@ -63,9 +63,13 @@ public class SetOf2DPoints {
     }
 
     public void solveAlgorithm(){
-        findConvexSkulls();
+        findConvexSkullsGrowingClockwise();
         foundPolygons.clear();
-        recursiveSolution();
+        //recursiveSolution();
+        //foundPolygons.clear();
+        findConvexSkullsMaxArea();
+        //foundPolygons.clear();
+
     }
 
     public void recursiveSolution(){
@@ -92,7 +96,7 @@ public class SetOf2DPoints {
                 return -Double.compare(p1.calculateArea(),p2.calculateArea());
             }
         });
-
+        System.out.println(foundPolygons.get(0));
         System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
     }
 
@@ -135,10 +139,9 @@ public class SetOf2DPoints {
 
     }
 
-    public void findConvexSkulls () {
-        System.out.println(this);
+    public void findConvexSkullsGrowingClockwise () {
         // search multiple times for different convex skulls
-        for (int i = 0; i<500000; i++){
+        for (int i = 0; i<5000; i++){
             Polygon2D polygon = searchForPolygonAttempt();
             if(polygon.isValid())
                 foundPolygons.add(polygon);
@@ -151,13 +154,122 @@ public class SetOf2DPoints {
                 return -Double.compare(p1.calculateArea(),p2.calculateArea());
             }
         });
-
+        System.out.println(foundPolygons.get(0));
         System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
 
     }
 
-    public Polygon2D searchForPolygonAttempt(){
+    public void findConvexSkullsMaxArea () {
+        // search multiple times for different convex skulls
+        for (int i = 0; i<5000; i++){
+            Polygon2D polygon = searcForPolygonAttemptMaxArea();
+            if(polygon.isValid())
+                foundPolygons.add(polygon);
+        }
+        System.out.println("Number of found polygons: " + foundPolygons.size());
+
+
+        Collections.sort(foundPolygons, new Comparator<Polygon2D>(){
+            public int compare(Polygon2D p1, Polygon2D p2){
+                return -Double.compare(p1.calculateArea(),p2.calculateArea());
+            }
+        });
+        System.out.println(foundPolygons.get(0));
+        System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
+
+    }
+
+
+    public Polygon2D searcForPolygonAttemptMaxArea () {
+        // constructive heuristic
         List<Point2D> usablePoints = new ArrayList<>(pointList); //
+        Polygon2D polygon = new Polygon2D();
+
+        // pick random beginpair
+        Collections.shuffle(usablePoints);
+        Point2D start = usablePoints.remove(0);
+        Point2D end = usablePoints.remove(0);
+        polygon.addPoint2DToEnd(start);
+        polygon.addPoint2DToEnd(end);
+
+        // 3th point
+        Point2D thirdPoint=null;
+        double maxArea = 0;
+        Polygon2D maxPolygon = null;
+        for(Point2D point: usablePoints) {
+            Polygon2D temp = new Polygon2D(polygon);
+            if (point.isOnLeftOfVector(start, end))
+                temp.addPoint2DToEnd(point);
+            else
+                temp.getPoint2DList().add(1, point);
+
+            if (temp.calculateArea() > maxArea && temp.isEmpty(pointList)) {
+                maxArea = temp.calculateArea();
+                maxPolygon = temp;
+            }
+        }
+        polygon = new Polygon2D(maxPolygon);
+
+        // adding point that maximizes added area
+        boolean noPointFound = false;
+        do{
+
+            Polygon2D newPolygon = addPointToMaximizeArea(polygon,usablePoints);
+            if(newPolygon == null)
+                noPointFound = true;
+            else{
+                polygon = new Polygon2D(newPolygon);
+            }
+
+
+        } while(!noPointFound);
+
+        return polygon;
+
+    }
+
+    public Polygon2D addPointToMaximizeArea(Polygon2D polygon, List<Point2D> usablePoints){
+        usablePoints.removeAll(polygon.getPoint2DList());
+        Polygon2D maxPolygon = null;
+        double maxArea =0;
+        boolean pointAdded = false;
+        for(Point2D p : usablePoints){
+            for(int j = 0, i = polygon.point2DList.size() - 1; j < polygon.point2DList.size(); i = j++) {
+                // from i to j, h = point before i, k = point after j, in triangle h = k
+                // traverse edges in order
+                int h = i - 1;
+                int k = j + 1;
+                if (h < 0)
+                    h = polygon.numberOfPoints() - 1;
+                if (k == polygon.numberOfPoints())
+                    k = 0;
+
+                if(p.isOnLeftOfVector(polygon.point2DList.get(h),polygon.point2DList.get(i))
+                        && p.isOnLeftOfVector(polygon.point2DList.get(j),polygon.point2DList.get(k))
+                        && !p.isOnLeftOfVector(polygon.point2DList.get(i),polygon.point2DList.get(j)))
+                {
+                    Polygon2D temp = new Polygon2D(polygon);
+                    temp.point2DList.add(j,p);
+                    pointAdded = true;
+                    if(temp.isEmpty(pointList)) {
+                        double tempArea = temp.calculateArea();
+                        if(maxArea < tempArea) {
+                            maxPolygon = temp;
+                            maxArea = tempArea;
+                        }
+                    }
+
+                }
+            }
+        }
+        // maxPolygon is previous polygon with point added that adds largest area
+        if(!pointAdded)
+            return null;
+        return maxPolygon;
+    }
+
+    public Polygon2D searchForPolygonAttempt(){
+        List<Point2D> usablePoints = new ArrayList<>(pointList);
         Polygon2D polygon = new Polygon2D();
 
         // pick random beginpair
