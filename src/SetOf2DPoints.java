@@ -10,6 +10,7 @@ public class SetOf2DPoints {
     private List<Point2D> pointList;
     private List<Polygon2D> foundPolygons;
     private List<Point2D> checkedStartpoints;
+    public int number = 0;
     public SetOf2DPoints() {
         this.pointList = new ArrayList<>();
         this.foundPolygons = new ArrayList<>();
@@ -63,12 +64,12 @@ public class SetOf2DPoints {
     }
 
     public void solveAlgorithm(){
-        findConvexSkullsGrowingClockwise();
-        foundPolygons.clear();
-        //recursiveSolution();
-        //foundPolygons.clear();
-        findConvexSkullsMaxArea();
-        //foundPolygons.clear();
+        long startTime = System.nanoTime();
+        recursiveSolution();
+        long difference = System.nanoTime() - startTime;
+        System.out.println("recursive: " + difference/1000000);
+        System.out.println("recursive iterations: " + number);
+
 
     }
 
@@ -91,13 +92,20 @@ public class SetOf2DPoints {
         // check results
         System.out.println("Number of found polygons: " + foundPolygons.size());
 
+        Polygon2D maxPolygon = foundPolygons.get(0);
+        for(Polygon2D p: foundPolygons){
+            if(p.calculateArea()>maxPolygon.area){
+                maxPolygon = p;
+            }
+        }
+/*
         Collections.sort(foundPolygons, new Comparator<Polygon2D>(){
             public int compare(Polygon2D p1, Polygon2D p2){
                 return -Double.compare(p1.calculateArea(),p2.calculateArea());
             }
-        });
+        });*/
         System.out.println(foundPolygons.get(0));
-        System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
+        System.out.println("Largest area: " + foundPolygons.get(0).calculateArea() + "  andere: "+ maxPolygon.area);
     }
 
     public void startSearchFromPair(Point2D p1, Point2D p2){
@@ -127,6 +135,8 @@ public class SetOf2DPoints {
             Polygon2D temp = new Polygon2D(polygon);
             temp.addPoint2DToEnd(newPoint);
 
+            number++;
+
             if(!checkedStartpoints.contains(newPoint)) {
                 if (temp.isConvex()) {
                     if (temp.isEmpty(pointsLeft)) {
@@ -139,29 +149,10 @@ public class SetOf2DPoints {
 
     }
 
-    public void findConvexSkullsGrowingClockwise () {
+
+    public void findConvexSkullsMaxArea (int attempts) {
         // search multiple times for different convex skulls
-        for (int i = 0; i<5000; i++){
-            Polygon2D polygon = searchForPolygonAttempt();
-            if(polygon.isValid())
-                foundPolygons.add(polygon);
-        }
-        System.out.println("Number of found polygons: " + foundPolygons.size());
-
-
-        Collections.sort(foundPolygons, new Comparator<Polygon2D>(){
-            public int compare(Polygon2D p1, Polygon2D p2){
-                return -Double.compare(p1.calculateArea(),p2.calculateArea());
-            }
-        });
-        System.out.println(foundPolygons.get(0));
-        System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
-
-    }
-
-    public void findConvexSkullsMaxArea () {
-        // search multiple times for different convex skulls
-        for (int i = 0; i<5000; i++){
+        for (int i = 0; i<attempts; i++){
             Polygon2D polygon = searcForPolygonAttemptMaxArea();
             if(polygon.isValid())
                 foundPolygons.add(polygon);
@@ -266,6 +257,29 @@ public class SetOf2DPoints {
         if(!pointAdded)
             return null;
         return maxPolygon;
+    }
+
+
+
+
+    public void findConvexSkullsGrowingClockwise (int attempts) {
+        // search multiple times for different convex skulls
+        for (int i = 0; i<attempts; i++){
+            Polygon2D polygon = searchForPolygonAttempt();
+            if(polygon.isValid())
+                foundPolygons.add(polygon);
+        }
+        System.out.println("Number of found polygons: " + foundPolygons.size());
+
+
+        Collections.sort(foundPolygons, new Comparator<Polygon2D>(){
+            public int compare(Polygon2D p1, Polygon2D p2){
+                return -Double.compare(p1.calculateArea(),p2.calculateArea());
+            }
+        });
+        System.out.println(foundPolygons.get(0));
+        System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
+
     }
 
     public Polygon2D searchForPolygonAttempt(){

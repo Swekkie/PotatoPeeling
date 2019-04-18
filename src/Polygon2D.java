@@ -4,7 +4,7 @@ import java.util.List;
 
 // points are listed in counter-clockwise direction
 public class Polygon2D {
-
+    public double area;
     private double xMax, xMin, yMax, yMin;
     public List<Point2D> point2DList;
 
@@ -43,7 +43,8 @@ public class Polygon2D {
             area += (p2.getX() + p1.getX()) * (p2.getY() - p1.getY());
             j = i;
         }
-        return Math.abs(area / 2);
+        this.area = Math.abs(area / 2);
+        return this.area;
     }
 
     public boolean isConvex() {

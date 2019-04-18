@@ -15,7 +15,7 @@ public class Application {
         // write output
         try {
             setOfPoints.writePointsToFile("D:/Masterproef/PotatoPeeling/pointset.txt");
-            setOfPoints.writePolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
+            setOfPoints.writeFiftyLargestPolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -25,7 +25,7 @@ public class Application {
 
     public static List<Point2D> generatePoints1(){
         Random random = new Random(6);
-        int numberOfPoints = 200;
+        int numberOfPoints = 100;
 
         int xRange = 40;
         int yRange = 40;
@@ -73,7 +73,6 @@ public class Application {
         Point2D p8 = new Point2D(5,5);
         Point2D p9 = new Point2D(9,7);
         Point2D p10 = new Point2D(7,9.5);
-        Point2D p11 = new Point2D(4.5,8.5);
 
         tempList.add(p1);
         tempList.add(p2);
@@ -85,13 +84,12 @@ public class Application {
         tempList.add(p8);
         tempList.add(p9);
         tempList.add(p10);
-        tempList.add(p11);
         return tempList;
     }
 
     public static List<Point2D> generatePoints3(){
         Random random = new Random(6);
-        int numberOfPoints = 500;
+        int numberOfPoints = 20;
 
         int xRange = 40;
         int yRange = 40;
