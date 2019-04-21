@@ -1,3 +1,5 @@
+package problem2D;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,11 @@ public class Polygon2D {
     public Polygon2D(Polygon2D p) {
         point2DList = new ArrayList<>(p.getPoint2DList());
     }
+
+    public Polygon2D(List<Point2D> point2DList) {
+        this.point2DList = new ArrayList<>(point2DList);
+    }
+
     public void addPoint2DToEnd(Point2D point) {
         point2DList.add(point);
     }

@@ -1,3 +1,5 @@
+package problem2D;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -25,13 +27,18 @@ public class Point2D {
         return x;
     }
 
-
     public double getY() {
         return y;
     }
 
     public int getId() {
         return id;
+    }
+
+
+    public double calculateAngleOfVectorFrom(Point2D from){
+        // doesn't do the tan-1, not necessary
+        return (this.y-from.y)/(this.x-from.x);
     }
 
     // on left of vector = on the counter clockwise half of the vector (positive cross product)
@@ -57,5 +64,6 @@ public class Point2D {
                 DecimalFormatSymbols.getInstance(Locale.US));
         return df.format(x) + ";" + df.format(y);
     }
+
 
 }

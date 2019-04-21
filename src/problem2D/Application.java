@@ -1,3 +1,5 @@
+package problem2D;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +9,7 @@ public class Application {
 
     public static void main(String[] args) {
 
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints3());
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1());
 
         // solve for the given set
         setOfPoints.solveAlgorithm();
@@ -25,7 +27,7 @@ public class Application {
 
     public static List<Point2D> generatePoints1(){
         Random random = new Random(6);
-        int numberOfPoints = 100;
+        int numberOfPoints = 3000;
 
         int xRange = 40;
         int yRange = 40;
@@ -89,7 +91,7 @@ public class Application {
 
     public static List<Point2D> generatePoints3(){
         Random random = new Random(6);
-        int numberOfPoints = 20;
+        int numberOfPoints = 5000;
 
         int xRange = 40;
         int yRange = 40;

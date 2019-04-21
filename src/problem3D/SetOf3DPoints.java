@@ -1,3 +1,5 @@
+package problem3D;
+
 import java.util.*;
 
 public class SetOf3DPoints {
