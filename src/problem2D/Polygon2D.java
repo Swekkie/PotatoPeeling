@@ -1,7 +1,6 @@
 package problem2D;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 // points are listed in counter-clockwise direction
@@ -66,7 +65,6 @@ public class Polygon2D {
         return true;
     }
 
-
     public boolean isEmpty(List<Point2D> points) {
         updateBoundaries();
         List<Point2D> pointsToCheck = new ArrayList<>(points);
@@ -79,6 +77,43 @@ public class Polygon2D {
         return true;
     }
 
+    public boolean isFeasible(List<Point2D> allPoints){
+        if(!isValid())
+            return false;
+
+        List<Point2D> usablePoints = new ArrayList<>(allPoints);
+        for(int i = 0, j = point2DList.size() - 1; i < point2DList.size(); j = i++){
+            int k = i + 1;
+            if(k == point2DList.size())
+                k = 0;
+
+            Point2D start = point2DList.get(j);
+            Point2D to = point2DList.get(i);
+            Point2D next = point2DList.get(k);
+            //usablePoints.remove(start);
+            //usablePoints.remove(to);
+
+            // remove points on right of vector
+            ListIterator<Point2D> iter = usablePoints.listIterator();
+            while (iter.hasNext()) {
+                if (!iter.next().isOnLeftOfVector(start, to)) {
+                    iter.remove();
+                }
+            }
+
+            if(!usablePoints.contains(next))
+                return false;
+        }
+
+        // check for emptyness
+        usablePoints.removeAll(point2DList);
+        for(Point2D p: usablePoints){
+            if(p.isOnLeftOfVector(point2DList.get(0),point2DList.get(1))){
+                return false;
+            }
+        }
+        return true;
+    }
 
     private void updateBoundaries() {
         xMax = Double.MIN_VALUE;
@@ -111,12 +146,17 @@ public class Polygon2D {
         return true;
     }
 
-    // a polygon is valid when it has at least 3 points
+    // a polygon is valid when it has at least 3 points and has no duplicate points
     public boolean isValid() {
-        if (point2DList.size() > 2)
-            return true;
-        else
+        if (point2DList.size() < 3)
             return false;
+        Set<Point2D> appeared = new HashSet<>();
+        for (Point2D p: point2DList) {
+            if (!appeared.add(p)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public List<Point2D> getPoint2DList() {

@@ -9,7 +9,8 @@ public class Application {
 
     public static void main(String[] args) {
 
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1());
+        Random random = new Random();
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(500,random),random);
 
         // solve for the given set
         setOfPoints.solveAlgorithm();
@@ -17,7 +18,8 @@ public class Application {
         // write output
         try {
             setOfPoints.writePointsToFile("D:/Masterproef/PotatoPeeling/pointset.txt");
-            setOfPoints.writeFiftyLargestPolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
+            //setOfPoints.writeFiftyLargestPolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
+            setOfPoints.writePolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -25,12 +27,10 @@ public class Application {
 
     }
 
-    public static List<Point2D> generatePoints1(){
-        Random random = new Random(6);
-        int numberOfPoints = 3000;
+    public static List<Point2D> generatePoints1(int numberOfPoints,Random random){
 
-        int xRange = 40;
-        int yRange = 40;
+        int xRange = 10;
+        int yRange = 10;
 
         List<Point2D> tempList = new ArrayList<>();
 
@@ -89,12 +89,9 @@ public class Application {
         return tempList;
     }
 
-    public static List<Point2D> generatePoints3(){
-        Random random = new Random(6);
-        int numberOfPoints = 5000;
-
-        int xRange = 40;
-        int yRange = 40;
+    public static List<Point2D> generatePoints3(int numberOfPoints, Random random){
+        int xRange = 10;
+        int yRange = 10;
 
         List<Point2D> tempList = new ArrayList<>();
 
@@ -109,4 +106,5 @@ public class Application {
         }
         return tempList;
     }
+
 }

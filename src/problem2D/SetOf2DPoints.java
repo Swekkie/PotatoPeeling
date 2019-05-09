@@ -12,6 +12,8 @@ public class SetOf2DPoints {
     private List<Point2D> pointList;
     private List<Polygon2D> foundPolygons;
     private List<Point2D> checkedStartpoints;
+    private Polygon2D bestSolution;
+    private Random random;
     public int number = 0;
 
     public SetOf2DPoints() {
@@ -20,10 +22,10 @@ public class SetOf2DPoints {
 
     }
 
-    public SetOf2DPoints(List<Point2D> points) {
+    public SetOf2DPoints(List<Point2D> points, Random random) {
         this.pointList = new ArrayList<>(points);
         this.foundPolygons = new ArrayList<>();
-
+        this.random = random;
     }
 
     public void addPoint(Point2D p) {
@@ -68,6 +70,7 @@ public class SetOf2DPoints {
     }
 
     public void printInfoFoundPolygonsToConsole(){
+        System.out.println("start sorting");
         Collections.sort(foundPolygons, new Comparator<Polygon2D>() {
             public int compare(Polygon2D p1, Polygon2D p2) {
                 return -Double.compare(p1.calculateArea(), p2.calculateArea());
@@ -79,8 +82,17 @@ public class SetOf2DPoints {
     }
 
     public void solveAlgorithm() {
+        //recursiveSolution();
+        //findConvexSkullsGrowingClockwise(5000);
         findConvexSkullsUsingStarshapedPolygons();
         printInfoFoundPolygonsToConsole();
+        foundPolygons.clear();
+        findConvexSkullsMaxArea(100);
+        printInfoFoundPolygonsToConsole();
+        Polygon2D initialSolution = foundPolygons.get(0);
+        foundPolygons.clear();
+        simulatedAnnealing(initialSolution,5000);
+
     }
 
 
@@ -172,17 +184,6 @@ public class SetOf2DPoints {
             if (polygon.isValid())
                 foundPolygons.add(polygon);
         }
-        System.out.println("Number of found polygons: " + foundPolygons.size());
-
-
-        Collections.sort(foundPolygons, new Comparator<Polygon2D>() {
-            public int compare(Polygon2D p1, Polygon2D p2) {
-                return -Double.compare(p1.calculateArea(), p2.calculateArea());
-            }
-        });
-        System.out.println(foundPolygons.get(0));
-        System.out.println("Largest area: " + foundPolygons.get(0).calculateArea());
-
     }
 
     public Polygon2D searchForPolygonAttemptMaxArea() {
@@ -191,9 +192,13 @@ public class SetOf2DPoints {
         Polygon2D polygon = new Polygon2D();
 
         // pick random beginpair
-        Collections.shuffle(usablePoints);
-        Point2D start = usablePoints.remove(0);
-        Point2D end = usablePoints.remove(0);
+        Random random = new Random();
+        int indexStart, indexEnd;
+        indexStart = random.nextInt(usablePoints.size());
+        indexEnd = random.nextInt(usablePoints.size()-1);
+
+        Point2D start = usablePoints.remove(indexStart);
+        Point2D end =  usablePoints.remove(indexEnd);
         polygon.addPoint2DToEnd(start);
         polygon.addPoint2DToEnd(end);
 
@@ -214,7 +219,7 @@ public class SetOf2DPoints {
             }
         }
         polygon = new Polygon2D(maxPolygon);
-
+/*
         // adding point that maximizes added area
         boolean noPointFound = false;
         do {
@@ -227,17 +232,20 @@ public class SetOf2DPoints {
             }
 
 
-        } while (!noPointFound);
-
+        } while (!noPointFound&&polygon.point2DList.size()<4);
+*/
         return polygon;
 
     }
 
     public Polygon2D addPointToMaximizeArea(Polygon2D polygon, List<Point2D> usablePoints) {
         usablePoints.removeAll(polygon.getPoint2DList());
-        Polygon2D maxPolygon = null;
-        double maxArea = 0;
-        boolean pointAdded = false;
+
+        List<List<Point2D>> pointsPossibleForEdgeList = new ArrayList<>();
+        for(int i = 0; i<polygon.point2DList.size();i++){
+            pointsPossibleForEdgeList.add(new ArrayList<>());
+        }
+
         for (Point2D p : usablePoints) {
             for (int j = 0, i = polygon.point2DList.size() - 1; j < polygon.point2DList.size(); i = j++) {
                 // from i to j, h = point before i, k = point after j, in triangle h = k
@@ -252,20 +260,33 @@ public class SetOf2DPoints {
                 if (p.isOnLeftOfVector(polygon.point2DList.get(h), polygon.point2DList.get(i))
                         && p.isOnLeftOfVector(polygon.point2DList.get(j), polygon.point2DList.get(k))
                         && !p.isOnLeftOfVector(polygon.point2DList.get(i), polygon.point2DList.get(j))) {
-                    Polygon2D temp = new Polygon2D(polygon);
-                    temp.point2DList.add(j, p);
-                    pointAdded = true;
-                    if (temp.isEmpty(pointList)) {
-                        double tempArea = temp.calculateArea();
-                        if (maxArea < tempArea) {
-                            maxPolygon = temp;
-                            maxArea = tempArea;
-                        }
-                    }
-
+                    pointsPossibleForEdgeList.get(j).add(p); // points can be added to the edge i j (edge ij on index j in list)
+                    break;
                 }
             }
         }
+
+        Polygon2D maxPolygon = null;
+        double maxArea = 0;
+        boolean pointAdded = false;
+        // search for point that adds most area
+        for(int listIndex = 0; listIndex<pointsPossibleForEdgeList.size();listIndex++){
+            List<Point2D> pointsPossibleForEdge = pointsPossibleForEdgeList.get(listIndex);
+            for(Point2D p: pointsPossibleForEdge){
+
+                Polygon2D temp = new Polygon2D(polygon);
+                temp.point2DList.add(listIndex, p);
+                if (temp.isEmpty(pointsPossibleForEdge)) {
+                    pointAdded = true;
+                    double tempArea = temp.calculateArea();
+                    if (maxArea < tempArea) {
+                        maxPolygon = temp;
+                        maxArea = tempArea;
+                    }
+                }
+            }
+        }
+
         // maxPolygon is previous polygon with point added that adds largest area
         if (!pointAdded)
             return null;
@@ -300,7 +321,7 @@ public class SetOf2DPoints {
         Polygon2D polygon = new Polygon2D();
 
         // pick random beginpair
-        Collections.shuffle(usablePoints);
+        Collections.shuffle(usablePoints, random);
         Point2D start = usablePoints.remove(0);
         Point2D end = usablePoints.remove(0);
         polygon.addPoint2DToEnd(start);
@@ -347,6 +368,7 @@ public class SetOf2DPoints {
 
 
     // EXACT ALGORITHM USING STARSHAPED POLYGONS
+
     public void findConvexSkullsUsingStarshapedPolygons() {
         for (Point2D kernelPoint : pointList) {
             List<Point2D> orderedPoints = new ArrayList<>(pointList);
@@ -407,7 +429,10 @@ public class SetOf2DPoints {
         Collections.sort(orderedPoints, new Comparator<Point2D>() {
             @Override
             public int compare(Point2D p1, Point2D p2) {
-                return Double.compare(p1.calculateAngleOfVectorFrom(kernelPoint), p2.calculateAngleOfVectorFrom(kernelPoint));
+                int a = Double.compare(p1.calculateAngleOfVectorFrom(kernelPoint), p2.calculateAngleOfVectorFrom(kernelPoint));
+                if(a==0)
+                    System.out.println("oeps");
+                return a;
             }
         });
 
@@ -519,4 +544,59 @@ public class SetOf2DPoints {
 
     }
 
+
+    // LOCALSEARCH
+    public void localSearch(Polygon2D startingPolygon,int iterations){
+        PolygonFactory factory = new PolygonFactory(pointList,random);
+        bestSolution = startingPolygon;
+        bestSolution.calculateArea();
+        foundPolygons.add(bestSolution);
+
+        for(int i = 0; i<iterations;i++){
+            Polygon2D neighbour = factory.generateNeighbour(bestSolution);
+            if(neighbour.isFeasible(pointList)){
+                neighbour.calculateArea();
+                //System.out.println(neighbour.area);
+                if(neighbour.calculateArea()>bestSolution.area){
+                    bestSolution = neighbour;
+                    foundPolygons.add(neighbour);
+                    System.out.println(bestSolution.area);
+                }
+            }
+        }
+    }
+
+    // SIMULATED ANNEALING
+
+    public void simulatedAnnealing(Polygon2D startingPolygon,int iterations){
+        PolygonFactory factory = new PolygonFactory(pointList,random);
+        bestSolution = startingPolygon;
+        bestSolution.calculateArea();
+        foundPolygons.add(bestSolution);
+        double startingTemperature = 0.5;
+        for(int i = 0; i<iterations;i++){
+            double temperature = startingTemperature-startingTemperature/iterations*i;
+            Polygon2D neighbour = factory.generateNeighbour(bestSolution);
+            if(neighbour.isFeasible(pointList)){
+                neighbour.calculateArea();
+
+                if(neighbour.area>=bestSolution.area){
+                    bestSolution = neighbour;
+                    foundPolygons.add(neighbour);
+                    System.out.println(bestSolution.area);
+                }
+                else{
+                    double areaDifference = bestSolution.area - neighbour.area;
+                    double probability = Math.exp(-areaDifference/temperature);
+                    System.out.println("Prob:" + probability);
+                    if(random.nextDouble()<probability){
+                        bestSolution = neighbour;
+                        foundPolygons.add(neighbour);
+                        System.out.println(bestSolution.area);
+                    }
+                }
+
+            }
+        }
+    }
 }

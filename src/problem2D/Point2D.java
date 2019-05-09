@@ -55,14 +55,19 @@ public class Point2D {
 
     @Override
     public String toString() {
+        /*
         DecimalFormat df = new DecimalFormat("#.00",
                 DecimalFormatSymbols.getInstance(Locale.US));
         return df.format(x) + ";" + df.format(y) + " id: " + id;
+        */
+        return x + ";" + y + " id: " + id;
     }
     public String toStringFile() {
-        DecimalFormat df = new DecimalFormat("#.00",
+
+        DecimalFormat df = new DecimalFormat("#.000000",
                 DecimalFormatSymbols.getInstance(Locale.US));
         return df.format(x) + ";" + df.format(y);
+
     }
 
 
