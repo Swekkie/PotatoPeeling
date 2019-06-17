@@ -6,10 +6,12 @@ public class PolygonFactory {
 
     private List<Point2D> setOfPoints;
     private Random random;
+    private boolean simulatedAnnealing;
 
-    public PolygonFactory(List<Point2D> setOfPoints, Random random){
+    public PolygonFactory(List<Point2D> setOfPoints, Random random,boolean simulatedAnnealing){
         this.setOfPoints = setOfPoints;
         this.random = random;
+        this.simulatedAnnealing = simulatedAnnealing;
     }
 
     public Polygon2D generateNeighbour(Polygon2D polygon){
@@ -23,9 +25,13 @@ public class PolygonFactory {
     private int deletePoints(List<Point2D> pointListPolygon){
         // generate random index from where to remove points
         int index = random.nextInt(pointListPolygon.size());
-        // generate number of random number of points to remove (0-1-2-3)
+        // generate number of random number of points to remove
         // or less (after deletion we still want 3 points left)
-        int toDelete = random.nextInt(Math.min(2,pointListPolygon.size()-2));
+        int maxToDelete = 4; // 0-1-2-3 when localsearch (bigger neighbourhood)
+        if(simulatedAnnealing)
+            maxToDelete = 2; // smaller neighbourhood is better for simulated annealing
+
+        int toDelete = random.nextInt(Math.min(maxToDelete,pointListPolygon.size()-2));
         // remove points
         for(int i = 0; i<toDelete; i++){
             if(index>pointListPolygon.size()-1)

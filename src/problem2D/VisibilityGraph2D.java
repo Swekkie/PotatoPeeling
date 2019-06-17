@@ -7,14 +7,14 @@ import java.util.Queue;
 
 public class VisibilityGraph2D {
 
-    List<Point2D> starShapedPolygon;
-    List<List<Edge>> edges;
-    List<Queue<Integer>> queues;
+    public List<Point2D> starShapedPolygon;
+    public List<List<Edge>> edges;
+    public List<Queue<Integer>> queues;
 
     public VisibilityGraph2D(List<Point2D> starShapedPolygon) {
         this.starShapedPolygon = starShapedPolygon;
-        queues = new ArrayList<>();
-        edges = new ArrayList<>();
+        this.queues = new ArrayList<>();
+        this.edges = new ArrayList<>();
         createGraph();
     }
 
@@ -46,7 +46,6 @@ public class VisibilityGraph2D {
     public boolean turn(int i, int j, int k) {
         return starShapedPolygon.get(k).isOnLeftOfVector(starShapedPolygon.get(i), starShapedPolygon.get(j));
     }
-
 
     public void proceed(int i, int j) {
         Queue<Integer> queue = queues.get(i);

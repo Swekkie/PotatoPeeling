@@ -1,7 +1,7 @@
 package problem2D;
-
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -10,10 +10,24 @@ public class Application {
     public static void main(String[] args) {
 
         Random random = new Random();
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(500,random),random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints2(),random);
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints4(6000,6,1,random),random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("tsp_input.txt"),random);
 
-        // solve for the given set
-        setOfPoints.solveAlgorithm();
+
+        // Chosen algorithm
+        setOfPoints.solve();
+        //setOfPoints.printInfoFoundPolygonsToConsole();
+
+
+        /*
+        Polygon2D initialSolution = setOfPoints.getInitialSolution1();
+        setOfPoints.localSearch(initialSolution,5000);
+        setOfPoints.printInfoFoundPolygonsToConsole();
+        */
+
+
+        //setOfPoints.printInfoFoundPolygonsToConsole();
 
         // write output
         try {
@@ -86,6 +100,7 @@ public class Application {
         tempList.add(p8);
         tempList.add(p9);
         tempList.add(p10);
+
         return tempList;
     }
 
@@ -107,4 +122,95 @@ public class Application {
         return tempList;
     }
 
+    public static List<Point2D> generatePoints4(int numberOfPoints, int numberOfRegions, int maxRadius, Random random){
+        int xRange = 10;
+        int yRange = 10;
+
+        List<Point2D> tempList = new ArrayList<>();
+        List<Point2D> regionPoints = new ArrayList<>();
+
+        if(numberOfPoints<numberOfRegions)
+            System.exit(1);
+
+        double [] radius = new double[numberOfRegions];
+
+        for(int i = 0; i<numberOfRegions;i++){
+            double randomX = random.nextDouble();
+            double randomY = random.nextDouble();
+            randomX = randomX * xRange;
+            randomY = randomY * yRange;
+
+            radius[i] = Math.max(random.nextInt(maxRadius)+random.nextDouble(),1);
+
+            Point2D regionPoint = new Point2D(randomX,randomY);
+
+            System.out.println(regionPoint + "  Straal: " + radius[i]);
+
+            regionPoints.add(regionPoint);
+
+        }
+
+        while (tempList.size()!=numberOfPoints) {
+            double randomX = random.nextDouble();
+            double randomY = random.nextDouble();
+            randomX = randomX * xRange;
+            randomY = randomY * yRange;
+
+            Point2D p = new Point2D(randomX, randomY);
+
+            boolean badPoint = false;
+            for(int i = 0; i<radius.length; i++) {
+                if (regionPoints.get(i).getDistanceTo(p) < radius[i]) {
+                    badPoint = true;
+                    break;
+                }
+            }
+
+            if(!badPoint)
+                tempList.add(p);
+        }
+        return tempList;
+    }
+
+    public static List<Point2D> generatePoints5(String filename){
+        List<Point2D> pointSet = new ArrayList<>();
+        BufferedReader br = null;
+        double maxX = 0;
+        double maxY = 0;
+        try {
+
+            br = new BufferedReader(new FileReader(filename));
+            String line;
+            while ((line = br.readLine()) != null) {
+                double[] intArray = Arrays.stream(line.trim().split("\\s+"))
+                        .mapToDouble(Double::parseDouble)
+                        .toArray();
+                double x = intArray[0];
+                double y = intArray[1];
+                maxX = Math.max(maxX,x);
+                maxY = Math.max(maxY,y);
+                Point2D p = new Point2D(x,y);
+                pointSet.add(p);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        double factorX = maxX / 10;
+        double factorY = maxY / 10;
+
+        for (Point2D p: pointSet){
+            p.setX(p.getX()/factorX);
+            p.setY(p.getY()/factorY);
+        }
+
+        return  pointSet;
+
+    }
+
+
+
 }
+
