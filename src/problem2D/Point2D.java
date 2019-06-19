@@ -8,7 +8,6 @@ public class Point2D {
     private double x, y;
     public int id;
     public double areaForGreedyAdd;
-
     public Point2D() {
         this.x = 0;
         this.y = 0;

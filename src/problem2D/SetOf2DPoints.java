@@ -95,9 +95,17 @@ public class SetOf2DPoints {
         printInfoFoundPolygonsToConsole();
         System.out.println("done");
         GreedyAddPointHeuristic gh = new GreedyAddPointHeuristic(pointList, random, true);
-        foundPolygons = gh.solve(12000);
+        foundPolygons = gh.solve(4000);
         printInfoFoundPolygonsToConsole();
         System.out.println("done");
+
+        Polygon2D initSolution = foundPolygons.get(0);
+        System.out.println("init:" + initSolution);
+
+        LocalSearch ls = new LocalSearch(pointList,random,initSolution);
+        foundPolygons = ls.solve(5000);
+
+
     }
 
 
@@ -197,24 +205,7 @@ public class SetOf2DPoints {
 
     }
 */
-/*
-    public void localSearch(Polygon2D startingPolygon, int iterations) {
-        PolygonFactory factory = new PolygonFactory(pointList, random, false);
-        Polygon2D bestSolution = startingPolygon;
-        bestSolution.calculateArea();
-        foundPolygons.add(bestSolution);
-        for (int i = 0; i < iterations; i++) {
-            Polygon2D neighbour = factory.generateNeighbour(bestSolution);
-            if (neighbour.isFeasible(pointList)) {
-                neighbour.calculateArea();
-                if (neighbour.calculateArea() > bestSolution.area) {
-                    bestSolution = neighbour;
-                    foundPolygons.add(neighbour);
-                    System.out.println(bestSolution.area);
-                }
-            }
-        }
-    }
+
 
     // SIMULATED ANNEALING
 
@@ -227,27 +218,26 @@ public class SetOf2DPoints {
         for (int i = 0; i < iterations; i++) {
             double temperature = startingTemperature - startingTemperature / iterations * i;
             Polygon2D neighbour = factory.generateNeighbour(bestSolution);
-            if (neighbour.isFeasible(pointList)) {
-                neighbour.calculateArea();
+            neighbour.calculateArea();
 
-                if (neighbour.area >= bestSolution.area) {
+            if (neighbour.area >= bestSolution.area) {
+                bestSolution = neighbour;
+                foundPolygons.add(neighbour);
+                System.out.println(bestSolution.area);
+            } else {
+                double areaDifference = bestSolution.area - neighbour.area;
+                double probability = Math.exp(-areaDifference / temperature);
+                System.out.println("Prob:" + probability);
+                if (random.nextDouble() < probability) {
                     bestSolution = neighbour;
                     foundPolygons.add(neighbour);
                     System.out.println(bestSolution.area);
-                } else {
-                    double areaDifference = bestSolution.area - neighbour.area;
-                    double probability = Math.exp(-areaDifference / temperature);
-                    System.out.println("Prob:" + probability);
-                    if (random.nextDouble() < probability) {
-                        bestSolution = neighbour;
-                        foundPolygons.add(neighbour);
-                        System.out.println(bestSolution.area);
-                    }
                 }
-
             }
+
+
         }
     }
-*/
+
 
 }
