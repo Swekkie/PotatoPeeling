@@ -8,12 +8,13 @@ import java.util.Random;
 public class Application {
 
     public static void main(String[] args) {
-        Random random = new Random(1);
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints2(), random);
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(5000,random), random);
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints4(1500,5,4,random),random);
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("tsp_input.txt"),random);
-
+        Random random = new Random();
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(3000,random), random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints2(), random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints3(3000,random),random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints4(3000,5,4,random),random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("tsp_input.txt",random),random);
+        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints6(3000,random),random);
 
         // Chosen algorithm
         setOfPoints.solve();
@@ -43,8 +44,8 @@ public class Application {
 
     public static List<Point2D> generatePoints1(int numberOfPoints, Random random) {
 
-        int xRange = 10;
-        int yRange = 10;
+        double xRange = 10;
+        double yRange = 10;
 
         List<Point2D> tempList = new ArrayList<>();
 
@@ -172,7 +173,7 @@ public class Application {
         return tempList;
     }
 
-    public static List<Point2D> generatePoints5(String filename) {
+    public static List<Point2D> generatePoints5(String filename,Random random) {
         List<Point2D> pointSet = new ArrayList<>();
         BufferedReader br = null;
         double maxX = 0;
@@ -202,11 +203,58 @@ public class Application {
         double factorY = maxY / 10;
 
         for (Point2D p : pointSet) {
-            p.setX(p.getX() / factorX);
-            p.setY(p.getY() / factorY);
+            p.setX(p.getX() / factorX + random.nextDouble()/100);
+            p.setY(p.getY() / factorY + random.nextDouble()/100);
         }
 
         return pointSet;
 
     }
+
+    public static List<Point2D> generatePoints6(int numberOfPoints, Random random) {
+        int xRange = 10;
+        int yRange = 10;
+
+        List<Point2D> tempList = new ArrayList<>();
+        List<Point2D> regionPoints = new ArrayList<>();
+
+
+        double[] radius = new double[4];
+        double r1 = 3;
+        double r2 = 2;
+        double r3 = 3;
+        double r4 = 2;
+        radius[0] = r1;
+        radius[1] = r2;
+        radius[2] = r3;
+        radius[3] = r4;
+        regionPoints.add(new Point2D(3,5));
+        regionPoints.add(new Point2D(6,3));
+        regionPoints.add(new Point2D(6,6));
+        regionPoints.add(new Point2D(7,7));
+
+        while (tempList.size() != numberOfPoints) {
+            double randomX = random.nextDouble();
+            double randomY = random.nextDouble();
+            randomX = randomX * xRange;
+            randomY = randomY * yRange;
+
+            Point2D p = new Point2D(randomX, randomY);
+
+            boolean badPoint = false;
+            for (int i = 0; i < radius.length; i++) {
+                if (regionPoints.get(i).getDistanceTo(p) < radius[i]) {
+                    badPoint = true;
+                    break;
+                }
+            }
+
+            if (!badPoint)
+                tempList.add(p);
+        }
+        return tempList;
+    }
+
+
+
 }

@@ -2,14 +2,14 @@ package problem2D;
 
 import java.util.*;
 
-public class LocalSearch {
+public class SimulatedAnnealing {
 
     private List<Point2D> inputPoints; // input set points
     private List<Polygon2D> foundPolygons;
     private Random random;
     private Polygon2D startingPolygon;
 
-    public LocalSearch(List<Point2D> inputPoints, Random random, Polygon2D startingPolygon){
+    public SimulatedAnnealing(List<Point2D> inputPoints, Random random, Polygon2D startingPolygon) {
         this.inputPoints = inputPoints;
         this.random = random;
         this.startingPolygon = startingPolygon;
@@ -17,47 +17,83 @@ public class LocalSearch {
 
     }
 
-    public List<Polygon2D> solve(int iterations) {
-        Polygon2D bestSolution = startingPolygon;
-        bestSolution.calculateArea();
-        foundPolygons.add(bestSolution);
-        for (int i = 0; i < iterations; i++) {
-            Polygon2D neighbour = generateNeighbour(bestSolution);
-            neighbour.calculateArea();
-            //System.out.println(neighbour + "area: " +  neighbour.area + "   "+i);
-            if (neighbour.calculateArea() > bestSolution.area) {
-                bestSolution = neighbour;
-                foundPolygons.add(neighbour);
-                //System.out.println(bestSolution.area + " " + i);
-            }
+    // SIMULATED ANNEALING
 
+    public List<Polygon2D> solve(int iterations, double startTemp, double endTemp,double beta) {
+        Polygon2D currentSolution = startingPolygon;
+        Polygon2D bestSolution = startingPolygon;
+        double startArea = currentSolution.calculateArea();
+        foundPolygons.add(currentSolution);
+        double coolingScheme[] = getCoolingSchemeGeometric(iterations,startTemp,endTemp,beta);
+
+        for (int i = 0; i < iterations; i++) {
+
+            double temperature = coolingScheme[i];
+
+            Polygon2D neighbour = generateNeighbour(currentSolution);
+            neighbour.calculateArea();
+            if (neighbour.area >= currentSolution.area) {
+                currentSolution = neighbour;
+                foundPolygons.add(neighbour);
+               // System.out.println(currentSolution.area);
+                if (currentSolution.area > bestSolution.area)
+                    bestSolution = currentSolution;
+            } else {
+                double areaDifference = currentSolution.area - neighbour.area;
+                double probability = Math.exp(-areaDifference / temperature);
+                //System.out.println("Prob:" + probability + "  Areadif" + areaDifference);
+                if (random.nextDouble() < probability && neighbour.area > startArea / 2) { // kind of threshold accepting
+                    currentSolution = neighbour;
+                    foundPolygons.add(neighbour);
+                   // System.out.println(currentSolution.area + "    " + "tss");
+                }
+            }
         }
+        foundPolygons.add(bestSolution);
         return foundPolygons;
     }
 
-    public Polygon2D generateNeighbour(Polygon2D polygon){
+    private double[] getCoolingScheme(int iterations, double startTemp, double stopTemp,double beta) {
+        double[] scheme = new double[iterations];
+        for (int i = 0; i < iterations; i++) {
+           scheme[i] = i*(stopTemp-startTemp)/iterations + startTemp;
+        }
+
+        return scheme;
+    }
+
+    private double[] getCoolingSchemeGeometric(int iterations, double startTemp, double stopTemp,double beta) {
+        double[] scheme = new double[iterations];
+        int numberOfTemps = (int) Math.ceil(Math.log10(stopTemp/startTemp)/Math.log10(beta));
+        int iterationsPerTemp = iterations/numberOfTemps;
+        for (int i = 0; i < iterations; i++) {
+            scheme[i] = startTemp*Math.pow(beta,i/iterationsPerTemp);
+        }
+        return scheme;
+    }
+
+    public Polygon2D generateNeighbour(Polygon2D polygon) {
         Polygon2D neighbour = new Polygon2D(polygon);
         List<Point2D> pointListPolygon = neighbour.point2DList;
         int index = deletePoints(pointListPolygon);
-        addPoints(index,pointListPolygon);
+        addPoints(index, pointListPolygon);
         return neighbour;
     }
 
     // removes consecutive points and returns index from where the points were removed
-    private int deletePoints(List<Point2D> pointListPolygon){
+    private int deletePoints(List<Point2D> pointListPolygon) {
         // generate random index from where to remove points
         int index = random.nextInt(pointListPolygon.size());
         // generate number of random number of points to remove
         // or less (after deletion we still want 3 points left)
         int maxToDelete = 3; // 0-1-2-3
-        int toDelete = random.nextInt(Math.min(maxToDelete+1,pointListPolygon.size()-2));
+        int toDelete = random.nextInt(Math.min(maxToDelete + 1, pointListPolygon.size() - 2));
         // remove points
-        for(int i = 0; i<toDelete; i++){
-            if(index>pointListPolygon.size()-1) {
+        for (int i = 0; i < toDelete; i++) {
+            if (index > pointListPolygon.size() - 1) {
                 pointListPolygon.remove(0);
                 index = 0;
-            }
-            else
+            } else
                 pointListPolygon.remove(index);
         }
         // return index (needed for adding points)
@@ -66,41 +102,39 @@ public class LocalSearch {
 
     // this function gives us the index where we will add the points
     // it calls the function that will actually add the points
-    private void addPoints(int index, List<Point2D> pointListPolygon){
+    private void addPoints(int index, List<Point2D> pointListPolygon) {
         // deleted points form new edge E
         // 4 possibilities of adding new points
         // 1) add in edge E-1 2) add in edge E 3) add in edge E+1
-        int [] indexing = new int[4];
-        indexing[0] = index-2;
-        indexing[1] = index-1;
+        int[] indexing = new int[4];
+        indexing[0] = index - 2;
+        indexing[1] = index - 1;
         indexing[2] = index;
-        indexing[3] = index+1;
+        indexing[3] = index + 1;
         int listSize = pointListPolygon.size();
-        for(int i =0; i<4; i++){
-            indexing[i]=(indexing[i]+listSize)%listSize;
+        for (int i = 0; i < 4; i++) {
+            indexing[i] = (indexing[i] + listSize) % listSize;
         }
         // generate random number for percentages
         double randomNumber = random.nextDouble(); //0 -->1
 
         int indexFrom, indexTo;
 
-        if(randomNumber<0.33){
+        if (randomNumber < 0.33) {
             indexFrom = indexing[0];
             indexTo = indexing[1];
-        }
-        else if(randomNumber<0.66){
+        } else if (randomNumber < 0.66) {
             indexFrom = indexing[1];
             indexTo = indexing[2];
-        }
-        else{
+        } else {
             indexFrom = indexing[2];
             indexTo = indexing[3];
         }
 
-        List<Point2D> pointsToAdd = addPointsToEdge(indexFrom,indexTo,pointListPolygon);
+        List<Point2D> pointsToAdd = addPointsToEdge(indexFrom, indexTo, pointListPolygon);
 
-        for(Point2D p: pointsToAdd){
-            pointListPolygon.add(indexTo,p);
+        for (Point2D p : pointsToAdd) {
+            pointListPolygon.add(indexTo, p);
         }
     }
 
@@ -108,11 +142,11 @@ public class LocalSearch {
         List<Point2D> usablePoints = new ArrayList<>(inputPoints);
         usablePoints.removeAll(pointListPolygon);
         int a = b - 1;
-        if(a<0)
-            a+= pointListPolygon.size();
+        if (a < 0)
+            a += pointListPolygon.size();
         int d = c + 1;
-        if(d>pointListPolygon.size()-1)
-            d-= pointListPolygon.size();
+        if (d > pointListPolygon.size() - 1)
+            d -= pointListPolygon.size();
         // a is d if 3 points in polygon
 
         // check which points can be added to edge b-c
@@ -132,15 +166,15 @@ public class LocalSearch {
         }
 
         // makes changes in usablePointsList
-        findPointsForEdge(usablePoints,pointB,pointC,false);
+        findPointsForEdge(usablePoints, pointB, pointC, false);
 
         // sort usable points by angle
         Collections.sort(usablePoints, new Comparator<Point2D>() {
             @Override
             public int compare(Point2D p1, Point2D p2) {
-                if(p1.isOnLeftOfVectorReturnCrossproduct(pointB,p2)>0)
+                if (p1.isOnLeftOfVectorReturnCrossproduct(pointB, p2) > 0)
                     return 1;
-                else if(p1.isOnLeftOfVectorReturnCrossproduct(pointB,p2)<0)
+                else if (p1.isOnLeftOfVectorReturnCrossproduct(pointB, p2) < 0)
                     return -1;
                 else {
                     return 0;
@@ -152,20 +186,19 @@ public class LocalSearch {
 
         // if there is only 1 point that can be added, return the list
         // same for no points
-        if(usablePoints.size()<2)
+        if (usablePoints.size() < 2)
             return usablePoints;
 
         // if there are two or more points that can be added, 2 possibilities:
         // 1) pick 1 point and add that
         // 2) pick 2 consecutive points, if we pick more points its not guaranteed that we add a convex chain
         boolean coinFlip = random.nextBoolean();
-        if(coinFlip){
+        if (coinFlip) {
             // option 1
-            Point2D p =  usablePoints.remove(random.nextInt(usablePoints.size()));
+            Point2D p = usablePoints.remove(random.nextInt(usablePoints.size()));
             usablePoints = new ArrayList<>();
             usablePoints.add(p);
-        }
-        else {
+        } else {
             // option 2
             int index = random.nextInt((usablePoints.size() - 1));
             Point2D p1 = usablePoints.get(index);
@@ -190,7 +223,7 @@ public class LocalSearch {
         Iterator<Point2D> it = points.iterator();
         while (it.hasNext()) {
             Point2D p = it.next();
-            if (p.calculateAreaGreedyAdd(start,end)==0) {
+            if (p.calculateAreaGreedyAdd(start, end) == 0) {
                 it.remove();
             }
         }
@@ -239,4 +272,6 @@ public class LocalSearch {
         return toRemove;
 
     }
+
+
 }
