@@ -62,20 +62,26 @@ public class Polygon2D {
         boolean checkForNonIntersecting =  true;
         for(int i = 0, j = point2DList.size() - 1; i < point2DList.size(); j = i++){
             int k = (i + 1)% point2DList.size();
+            Point2D pointI = point2DList.get(i);
+            Point2D pointJ = point2DList.get(j);
+            Point2D pointK = point2DList.get(k);
+
 
             // check for non intersecting
-            if(k+1<point2DList.size()){
+            if(k+1>=point2DList.size()){
                 checkForNonIntersecting = false;
             }
 
             if(checkForNonIntersecting){
-                if(!point2DList.get(k+1).isOnLeftOfVector(point2DList.get(0),point2DList.get(k))) {
+                Point2D pointKplus1 = point2DList.get(k+1);
+                Point2D startPoint = point2DList.get(0);
+                if(!pointKplus1.isOnLeftOfVector(startPoint,pointK)) {
                     return false;
                 }
             }
 
             // check for convex
-            if(!point2DList.get(k).isOnLeftOfVector(point2DList.get(j),point2DList.get(i)))
+            if(!pointK.isOnLeftOfVector(pointJ,pointI))
                 return false;
         }
 
