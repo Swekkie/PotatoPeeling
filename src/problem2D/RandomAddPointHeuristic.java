@@ -1,29 +1,41 @@
 package problem2D;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Random;
+import java.util.*;
 
 public class RandomAddPointHeuristic {
 
     private List<Point2D> inputPoints; // input set points
     private List<Polygon2D> foundPolygons;
     private Random random;
+    private Polygon2D maxPolygon = null;
+    private double maxArea = 0;
 
-    public RandomAddPointHeuristic(List<Point2D> inputPoints, Random random) {
+    public RandomAddPointHeuristic(List<Point2D> inputPoints) {
         this.inputPoints = inputPoints;
         this.foundPolygons = new ArrayList<>();
-        this.random = random;
+        this.random = new Random();
     }
 
-    public List<Polygon2D> solve(int attempts) {
+    public List<Polygon2D> solve(long timeInMillis) {
         // search multiple times for empty,convex polygons
-        for (int i = 0; i < attempts; i++) {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < timeInMillis) {
             Polygon2D polygon = searchForPolygonAttempt();
-            if (polygon.hasAtLeastThreePoints())
+            if (polygon.hasAtLeastThreePoints()) {
                 foundPolygons.add(polygon);
+
+                // track maxPolygon
+                if (polygon.calculateArea() > maxArea) {
+                    maxPolygon = polygon;
+                    maxArea = polygon.area;
+                }
+            }
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("RANDOM ADD HEURISTIC");
+        System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime - startTime));
         return foundPolygons;
     }
 
@@ -32,10 +44,9 @@ public class RandomAddPointHeuristic {
         Polygon2D polygon = new Polygon2D();
 
         // pick random beginpair
-        int index = random.nextInt(usablePoints.size());
-        Point2D start = usablePoints.remove(index);
-        index = random.nextInt(usablePoints.size());
-        Point2D end = usablePoints.remove(index);
+        Collections.shuffle(usablePoints);
+        Point2D start = usablePoints.remove(0);
+        Point2D end = usablePoints.remove(0);
         polygon.addPoint2DToEnd(start);
         polygon.addPoint2DToEnd(end);
 
@@ -49,30 +60,33 @@ public class RandomAddPointHeuristic {
         }
 
         while (!usablePoints.isEmpty()) {
-            // pick next point
-            Point2D first = polygon.getFirstPoint();
+            boolean pointAdded = false;
             Point2D secondLast = polygon.getPoint2DList().get(polygon.numberOfPoints() - 1); // second last after adding a new point
-            Point2D lastAdded = usablePoints.remove(0);
-            polygon.addPoint2DToEnd(lastAdded);
-            List<Point2D> tempCopy = new ArrayList<>(usablePoints);
 
             iter = usablePoints.listIterator();
+
+            // add new point, if valid, pointAdded is true, if not, remove it and try other
             while (iter.hasNext()) {
-                Point2D p = iter.next();
-                if (!p.isOnLeftOfVector(secondLast, lastAdded)) {
-                    // points on "clockwise" side of the vector
-                    iter.remove();
-                } else {
-                    if (!p.isOnLeftOfVector(first, lastAdded)) {
-                        // points inside polygon with new added point
-                        // remove new added point and try adding a new point
-                        polygon.removeLastPoint();
-                        usablePoints = tempCopy;
-                        break;
+                Point2D newPoint = iter.next();
+                iter.remove();
+                polygon.addPoint2DToEnd(newPoint);
+                if(polygon.isEmpty(usablePoints)){
+                    pointAdded = true;
+                    break;
+                }
+                else{
+                    polygon.removeLastPoint();
+                }
+            }
+            if(pointAdded) {
+                // remove points on right of new edge formed by newPoint
+                iter = usablePoints.listIterator();
+                while (iter.hasNext()) {
+                    if (!iter.next().isOnLeftOfVector(secondLast, polygon.getPoint2DList().get(polygon.numberOfPoints() - 1))) {
+                        iter.remove();
                     }
                 }
             }
-
         }
         return polygon;
     }

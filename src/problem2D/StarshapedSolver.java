@@ -7,6 +7,9 @@ public class StarshapedSolver {
     private List<Point2D> inputPoints; // input set points
     private List<Polygon2D> foundPolygons;
 
+    private Polygon2D maxPolygon = null;
+    private double maxArea = 0;
+
     public StarshapedSolver(List<Point2D> inputPoints){
         this.inputPoints = inputPoints;
         this.foundPolygons = new ArrayList<>();
@@ -14,6 +17,8 @@ public class StarshapedSolver {
 
 
     public List<Polygon2D> solve() {
+        long startTime = System.currentTimeMillis();
+
         // for every point in the input set:
         // find the largest area polygon with that point as leftmost point
         for (Point2D kernelPoint : inputPoints) {
@@ -23,6 +28,11 @@ public class StarshapedSolver {
             findMaxAreaEmptyPolygonWithMostLeftPoint(kernelPoint, orderedPoints);
         }
 
+        long endTime = System.currentTimeMillis();
+        System.out.println("STAR-SHAPED");
+        System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime-startTime));
         return foundPolygons;
     }
 
@@ -64,6 +74,12 @@ public class StarshapedSolver {
         Polygon2D polygon = new Polygon2D(maximumEmptyPolygon);
 
         foundPolygons.add(polygon);
+
+        // track maxPolygon
+        if(polygon.calculateArea()>maxArea){
+            maxPolygon = polygon;
+            maxArea = polygon.area;
+        }
     }
 
     private void removePointsOnLeft(List<Point2D> orderedPoints, Point2D kernelPoint) {

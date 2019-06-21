@@ -25,7 +25,7 @@ public class RecursiveSolver {
     // search is done in a recursive way, pruning where possible is done
     // does not do sorting of the list, or tracking largest (commented)
     public List<Polygon2D> solve() {
-
+        long startTime = System.currentTimeMillis();
         for (int i = 0; i < inputPoints.size(); i++) {
 
             Point2D startPoint = inputPoints.get(i);
@@ -44,9 +44,12 @@ public class RecursiveSolver {
 
         }
 
-        System.out.print("Largest area polygon: " + maxPolygon);
-        System.out.println("with area: " + maxPolygon.area);
-
+        long endTime = System.currentTimeMillis();
+        System.out.println("RECURSIVE");
+        System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime-startTime));
+        //foundPolygons.add(maxPolygon);
         return foundPolygons;
     }
 
@@ -73,21 +76,16 @@ public class RecursiveSolver {
             // check if the polygon with the new added point (temp) is convex and empty
             // if so, add to foundPolygons and call recursive function to try and add a new point
             else if (temp.isConvex() && temp.isEmptyWithoutRemove(newPointsLeft)){
-                saveIfLarger(temp);
                 foundPolygons.add(temp);
+                // track maxPolygon
+                if(temp.calculateArea()>maxArea){
+                    maxPolygon = temp;
+                    maxArea = temp.area;
+                }
                 addPointRecursive(temp, newPointsLeft);
             }
         }
 
     }
-
-    private void saveIfLarger(Polygon2D polygon) {
-        double area = polygon.calculateArea();
-        if (area > maxArea) {
-            maxPolygon = polygon;
-            maxArea = area;
-        }
-    }
-
 
 }

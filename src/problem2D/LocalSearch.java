@@ -8,30 +8,54 @@ public class LocalSearch {
     private List<Polygon2D> foundPolygons;
     private Random random;
     private Polygon2D startingPolygon;
+    private Polygon2D maxPolygon = null;
 
-    public LocalSearch(List<Point2D> inputPoints, Random random, Polygon2D startingPolygon){
+    public LocalSearch(List<Point2D> inputPoints, Polygon2D startingPolygon){
         this.inputPoints = inputPoints;
-        this.random = random;
+        this.random = new Random();
         this.startingPolygon = startingPolygon;
         this.foundPolygons = new ArrayList<>();
 
     }
 
-    public List<Polygon2D> solve(int iterations) {
-        Polygon2D bestSolution = startingPolygon;
-        bestSolution.calculateArea();
-        foundPolygons.add(bestSolution);
-        for (int i = 0; i < iterations; i++) {
-            Polygon2D neighbour = generateNeighbour(bestSolution);
-            neighbour.calculateArea();
-            //System.out.println(neighbour + "area: " +  neighbour.area + "   "+i);
-            if (neighbour.calculateArea() > bestSolution.area) {
-                bestSolution = neighbour;
-                foundPolygons.add(neighbour);
-                //System.out.println(bestSolution.area + " " + i);
+    public List<Polygon2D> solve(long timeInMillis) {
+        long startTime = System.currentTimeMillis();
+        boolean timeReached = false;
+        startingPolygon.calculateArea();
+        maxPolygon = startingPolygon;
+        do {
+            Polygon2D bestSolutionCycle = startingPolygon;
+            foundPolygons.add(bestSolutionCycle);
+            int iterations = 5 * inputPoints.size();
+
+            for (int i = 0; i < iterations; i++) {
+                if (timeInMillis < System.currentTimeMillis() - startTime) {
+                    timeReached = true;
+                    break;
+                }
+                Polygon2D neighbour = generateNeighbour(bestSolutionCycle);
+                neighbour.calculateArea();
+                if (neighbour.calculateArea() > bestSolutionCycle.area) {
+                    bestSolutionCycle = neighbour;
+                    foundPolygons.add(neighbour);
+                    if(bestSolutionCycle.area>maxPolygon.area){
+                        maxPolygon = bestSolutionCycle;
+                    }
+                }
+
             }
 
-        }
+            // cycle done, check if best polygon found this cycle is better than the maxPolygon
+            System.out.println("cycle check");
+            System.out.println(maxPolygon.area);
+
+        }while(!timeReached);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("LOCAL SEARCH HEURISTIC");
+        System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime - startTime));
         return foundPolygons;
     }
 

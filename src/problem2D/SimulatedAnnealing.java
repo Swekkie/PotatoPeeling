@@ -8,10 +8,11 @@ public class SimulatedAnnealing {
     private List<Polygon2D> foundPolygons;
     private Random random;
     private Polygon2D startingPolygon;
+    private Polygon2D maxPolygon = null;
 
-    public SimulatedAnnealing(List<Point2D> inputPoints, Random random, Polygon2D startingPolygon) {
+    public SimulatedAnnealing(List<Point2D> inputPoints, Polygon2D startingPolygon) {
         this.inputPoints = inputPoints;
-        this.random = random;
+        this.random = new Random();
         this.startingPolygon = startingPolygon;
         this.foundPolygons = new ArrayList<>();
 
@@ -19,55 +20,66 @@ public class SimulatedAnnealing {
 
     // SIMULATED ANNEALING
 
-    public List<Polygon2D> solve(int iterations, double startTemp, double endTemp,double beta) {
+    public List<Polygon2D> solve(double timeInMillis, double startTemp, double endTemp, double beta) {
+        long startTime = System.currentTimeMillis();
+        boolean timeReached = false;
         Polygon2D currentSolution = startingPolygon;
-        Polygon2D bestSolution = startingPolygon;
+        maxPolygon = startingPolygon;
         double startArea = currentSolution.calculateArea();
         foundPolygons.add(currentSolution);
-        double coolingScheme[] = getCoolingSchemeGeometric(iterations,startTemp,endTemp,beta);
+        int iterations = 5 * inputPoints.size();
+        double coolingScheme[] = getCoolingSchemeGeometric(iterations, startTemp, endTemp, beta);
 
-        for (int i = 0; i < iterations; i++) {
-
-            double temperature = coolingScheme[i];
-
-            Polygon2D neighbour = generateNeighbour(currentSolution);
-            neighbour.calculateArea();
-            if (neighbour.area >= currentSolution.area) {
-                currentSolution = neighbour;
-                foundPolygons.add(neighbour);
-               // System.out.println(currentSolution.area);
-                if (currentSolution.area > bestSolution.area)
-                    bestSolution = currentSolution;
-            } else {
-                double areaDifference = currentSolution.area - neighbour.area;
-                double probability = Math.exp(-areaDifference / temperature);
-                //System.out.println("Prob:" + probability + "  Areadif" + areaDifference);
-                if (random.nextDouble() < probability && neighbour.area > startArea / 2) { // kind of threshold accepting
+        do {
+            for(int i = 0; i<iterations; i++) {
+                if (timeInMillis < System.currentTimeMillis() - startTime) {
+                    timeReached = true;
+                    break;
+                }
+                double temperature = coolingScheme[i];
+                Polygon2D neighbour = generateNeighbour(currentSolution);
+                neighbour.calculateArea();
+                if (neighbour.area >= currentSolution.area) {
                     currentSolution = neighbour;
                     foundPolygons.add(neighbour);
-                   // System.out.println(currentSolution.area + "    " + "tss");
+                    // track maxPolygon
+                    if (currentSolution.area > maxPolygon.area)
+                        maxPolygon = currentSolution;
+                } else {
+                    double areaDifference = currentSolution.area - neighbour.area;
+                    double probability = Math.exp(-areaDifference / temperature);
+                    //System.out.println("Prob:" + probability + "  Areadif" + areaDifference);
+                    if (random.nextDouble() < probability && neighbour.area > startArea / 2) { // kind of threshold accepting
+                        currentSolution = neighbour;
+                    }
                 }
             }
-        }
-        foundPolygons.add(bestSolution);
+            System.out.println("cycle check" + maxPolygon.area);
+        }while(!timeReached);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("SIMULATED ANNEALING HEURISTIC");
+        System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime - startTime));
         return foundPolygons;
     }
 
-    private double[] getCoolingScheme(int iterations, double startTemp, double stopTemp,double beta) {
+    private double[] getCoolingScheme(int iterations, double startTemp, double stopTemp, double beta) {
         double[] scheme = new double[iterations];
         for (int i = 0; i < iterations; i++) {
-           scheme[i] = i*(stopTemp-startTemp)/iterations + startTemp;
+            scheme[i] = i * (stopTemp - startTemp) / iterations + startTemp;
         }
 
         return scheme;
     }
 
-    private double[] getCoolingSchemeGeometric(int iterations, double startTemp, double stopTemp,double beta) {
+    private double[] getCoolingSchemeGeometric(int iterations, double startTemp, double stopTemp, double beta) {
         double[] scheme = new double[iterations];
-        int numberOfTemps = (int) Math.ceil(Math.log10(stopTemp/startTemp)/Math.log10(beta));
-        int iterationsPerTemp = iterations/numberOfTemps;
+        int numberOfTemps = (int) Math.ceil(Math.log10(stopTemp / startTemp) / Math.log10(beta));
+        int iterationsPerTemp = iterations / numberOfTemps;
         for (int i = 0; i < iterations; i++) {
-            scheme[i] = startTemp*Math.pow(beta,i/iterationsPerTemp);
+            scheme[i] = startTemp * Math.pow(beta, i / iterationsPerTemp);
         }
         return scheme;
     }

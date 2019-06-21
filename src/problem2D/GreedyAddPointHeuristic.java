@@ -6,27 +6,39 @@ public class GreedyAddPointHeuristic {
 
     private List<Point2D> inputPoints; // input set points
     private List<Polygon2D> foundPolygons;
+    private Polygon2D maxPolygon = null;
+    private double maxArea = 0;
     private Random random;
     private boolean triangles;
 
 
-    public GreedyAddPointHeuristic(List<Point2D> inputPoints, Random random, boolean triangles) {
+    public GreedyAddPointHeuristic(List<Point2D> inputPoints, boolean triangles) {
         this.inputPoints = inputPoints;
         this.foundPolygons = new ArrayList<>();
-        this.random = random;
+        this.random = new Random();
         this.triangles = triangles;
 
     }
 
-    public List<Polygon2D> solve(int attempts) {
+    public List<Polygon2D> solve(long timeInMillis) {
         // search multiple times for empty, convex polygons
-        for (int i = 0; i < attempts; i++) {
+        long startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis()-startTime<timeInMillis){
             Polygon2D polygon = searchForPolygonAttemptMaxArea();
-            // TODO check is valid methode
-            if (polygon != null && polygon.isValid())
+            if (polygon != null && polygon.hasAtLeastThreePoints()) {
                 foundPolygons.add(polygon);
+                if(polygon.calculateArea()>maxArea){
+                    maxPolygon = polygon;
+                    maxArea = polygon.area;
+                }
+            }
         }
-
+        long endTime = System.currentTimeMillis();
+        System.out.println("GREEDY ADD HEURISTIC");
+        System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime - startTime));
+        foundPolygons.add(0,maxPolygon); // used for init solution
         return foundPolygons;
     }
 

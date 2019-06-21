@@ -11,18 +11,17 @@ public class SetOf2DPoints {
 
     private List<Point2D> pointList;
     private List<Polygon2D> foundPolygons;
-    private Random random;
 
     public SetOf2DPoints() {
         this.pointList = new ArrayList<>();
         this.foundPolygons = new ArrayList<>();
+        Collections.shuffle(pointList); // randomization in order for repeated testing
 
     }
 
-    public SetOf2DPoints(List<Point2D> points, Random random) {
+    public SetOf2DPoints(List<Point2D> points) {
         this.pointList = new ArrayList<>(points);
         this.foundPolygons = new ArrayList<>();
-        this.random = random;
 
         for (int i = 1; i <= pointList.size(); i++) {
             pointList.get(i - 1).id = i;
@@ -88,34 +87,29 @@ public class SetOf2DPoints {
 
     public void solve() {
 //        RecursiveSolver rs = new RecursiveSolver(pointList);
-//        foundPolygons = rs.solve();
-//        printInfoFoundPolygonsToConsole();
-        StarshapedSolver sv = new StarshapedSolver(pointList);
-        foundPolygons = sv.solve();
-        printInfoFoundPolygonsToConsole();
-        Polygon2D svp = foundPolygons.get(0);
-        System.out.println("done");
-        GreedyAddPointHeuristic gh = new GreedyAddPointHeuristic(pointList, random, true);
-        foundPolygons = gh.solve(2000);
-        printInfoFoundPolygonsToConsole();
-        System.out.println("done");
+//        rs.solve(); // prints the best polygon, its area, and time needed
+//        System.out.println("-------------");
+        StarshapedSolver ss = new StarshapedSolver(pointList);
+        ss.solve(); // prints the best polygon, its area, and time needed
+//        System.out.println("-------------");
 
-        Polygon2D initSolution = foundPolygons.get(0);
-        System.out.println("init:" + initSolution);
+//        RandomAddPointHeuristic ra = new RandomAddPointHeuristic(pointList);
+//        ra.solve(5000);
+//        System.out.println("-------------");
 
-        LocalSearch ls = new LocalSearch(pointList, random, initSolution);
-        foundPolygons = ls.solve(5000);
-        Polygon2D lsp = foundPolygons.get(foundPolygons.size()-1);
-        SimulatedAnnealing sa = new SimulatedAnnealing(pointList, random, initSolution);
-        foundPolygons = sa.solve(5000,2,0.05,0.95);
-        Polygon2D sap = foundPolygons.get(foundPolygons.size()-1);
-        System.out.println("Exact best:" + svp.area);
-        System.out.println("Localsearch best:" + lsp.area);
-        System.out.println("Simulated annealing best:" + sap.area);
-        foundPolygons.clear();
-        foundPolygons.add(svp);
-        foundPolygons.add(lsp);
-        foundPolygons.add(sap);
+//        GreedyAddPointHeuristic ga = new GreedyAddPointHeuristic(pointList,false);
+//        foundPolygons = ga.solve(5000);
+//        System.out.println("-------------");
+
+        GreedyAddPointHeuristic gaInit = new GreedyAddPointHeuristic(pointList,true);
+        Polygon2D initSolution = gaInit.solve(500).get(0);
+        System.out.println(initSolution);
+
+//        LocalSearch ls = new LocalSearch(pointList,initSolution);
+//        ls.solve(5000);
+
+        SimulatedAnnealing sa = new SimulatedAnnealing(pointList,initSolution);
+        sa.solve(5000,2,0.05,0.96);
 
     }
 
