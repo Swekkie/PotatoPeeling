@@ -17,7 +17,7 @@ public class GreedyAddPointHeuristic {
         this.foundPolygons = new ArrayList<>();
         this.random = new Random();
         this.triangles = triangles;
-
+        Collections.shuffle(inputPoints);
     }
 
     public List<Polygon2D> solve(long timeInMillis) {

@@ -6,15 +6,20 @@ import java.util.*;
 public class Application {
 
     public static void main(String[] args) {
-        Random random = new Random(0);
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(1000, random));
-
-
+        Random random = new Random(1);
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(50, random));
         //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints2());
         //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints3(3000,random),random);
         //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints4(3000,5,3,random),random);
         //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("tsp_input.txt",random),random);
         //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints6(3000,random),random);
+
+        try {
+            setOfPoints.writePointsToFile("D:/Masterproef/PotatoPeeling/pointset.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         // Chosen algorithm
         setOfPoints.solve();
@@ -30,7 +35,6 @@ public class Application {
 
         // write output
         try {
-            setOfPoints.writePointsToFile("D:/Masterproef/PotatoPeeling/pointset.txt");
             //setOfPoints.writeFiftyLargestPolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
             setOfPoints.writePolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
 

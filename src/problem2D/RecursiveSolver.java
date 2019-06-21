@@ -1,9 +1,6 @@
 package problem2D;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class RecursiveSolver {
     private List<Point2D> inputPoints; // input set points
@@ -18,6 +15,7 @@ public class RecursiveSolver {
         this.inputPoints = inputPoints;
         this.checkedStartPoints = new ArrayList<>();
         this.foundPolygons = new ArrayList<>();
+        //Collections.shuffle(inputPoints);
     }
 
 
@@ -49,7 +47,6 @@ public class RecursiveSolver {
         System.out.print("Max polygon: " + maxPolygon);
         System.out.println("Area: " + maxPolygon.area);
         System.out.println("Time (ms): " + (endTime-startTime));
-        //foundPolygons.add(maxPolygon);
         return foundPolygons;
     }
 
@@ -60,6 +57,7 @@ public class RecursiveSolver {
             // prune search because all polygons with that point have been searched already
             if (checkedStartPoints.contains(newPoint))
                 continue;
+
 
             // add newPoint to polygon and update pointsLeft
             Polygon2D temp = new Polygon2D(polygon);
@@ -76,12 +74,11 @@ public class RecursiveSolver {
             // check if the polygon with the new added point (temp) is convex and empty
             // if so, add to foundPolygons and call recursive function to try and add a new point
             else if (temp.isConvex() && temp.isEmptyWithoutRemove(newPointsLeft)){
-                foundPolygons.add(temp);
-                // track maxPolygon
                 if(temp.calculateArea()>maxArea){
                     maxPolygon = temp;
                     maxArea = temp.area;
                 }
+                foundPolygons.add(temp);
                 addPointRecursive(temp, newPointsLeft);
             }
         }

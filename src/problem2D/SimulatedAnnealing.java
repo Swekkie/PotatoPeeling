@@ -15,7 +15,7 @@ public class SimulatedAnnealing {
         this.random = new Random();
         this.startingPolygon = startingPolygon;
         this.foundPolygons = new ArrayList<>();
-
+        Collections.shuffle(inputPoints);
     }
 
     // SIMULATED ANNEALING

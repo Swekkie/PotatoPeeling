@@ -86,31 +86,27 @@ public class SetOf2DPoints {
     }
 
     public void solve() {
-//        RecursiveSolver rs = new RecursiveSolver(pointList);
-//        rs.solve(); // prints the best polygon, its area, and time needed
+        RecursiveSolver rs = new RecursiveSolver(pointList);
+        rs.solve(); // prints the best polygon, its area, and time needed
 //        System.out.println("-------------");
-        StarshapedSolver ss = new StarshapedSolver(pointList);
+      StarshapedSolver ss = new StarshapedSolver(pointList);
         ss.solve(); // prints the best polygon, its area, and time needed
 //        System.out.println("-------------");
-
 //        RandomAddPointHeuristic ra = new RandomAddPointHeuristic(pointList);
-//        ra.solve(5000);
+//        ra.solve(50);
 //        System.out.println("-------------");
-
 //        GreedyAddPointHeuristic ga = new GreedyAddPointHeuristic(pointList,false);
-//        foundPolygons = ga.solve(5000);
+//        foundPolygons = ga.solve(100);
 //        System.out.println("-------------");
-
-        GreedyAddPointHeuristic gaInit = new GreedyAddPointHeuristic(pointList,true);
-        Polygon2D initSolution = gaInit.solve(500).get(0);
-        System.out.println(initSolution);
-
+//        GreedyAddPointHeuristic gaInit = new GreedyAddPointHeuristic(pointList,true);
+//        Polygon2D initSolution = gaInit.solve(100).get(0);
+//        System.out.println(initSolution);
 //        LocalSearch ls = new LocalSearch(pointList,initSolution);
-//        ls.solve(5000);
-
-        SimulatedAnnealing sa = new SimulatedAnnealing(pointList,initSolution);
-        sa.solve(5000,2,0.05,0.96);
-
+//        ls.solve(200);
+//        System.out.println("-------------");
+//        SimulatedAnnealing sa = new SimulatedAnnealing(pointList,initSolution);
+//        sa.solve(200,2,0.05,0.96);
+//        System.out.println("-------------");
     }
 
 

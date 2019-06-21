@@ -13,6 +13,7 @@ public class StarshapedSolver {
     public StarshapedSolver(List<Point2D> inputPoints){
         this.inputPoints = inputPoints;
         this.foundPolygons = new ArrayList<>();
+        Collections.shuffle(inputPoints);
     }
 
 

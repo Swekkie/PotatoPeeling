@@ -15,7 +15,7 @@ public class LocalSearch {
         this.random = new Random();
         this.startingPolygon = startingPolygon;
         this.foundPolygons = new ArrayList<>();
-
+        Collections.shuffle(inputPoints);
     }
 
     public List<Polygon2D> solve(long timeInMillis) {
