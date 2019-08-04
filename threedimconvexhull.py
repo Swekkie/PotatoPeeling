@@ -126,10 +126,9 @@ def anim(meshes):
             yield
 
 def localSearch(initSolution, iterations):
-    currentSolution = initSolution
-    initMesh = Mesh(constructConvexHullFromIds(currentSolution),initSolution)
-    bestVolume = initMesh.hull.volume
-    meshes.append(initMesh)
+    currentSolution = initSolution.ids
+    bestVolume = initSolution.hull.volume
+    meshes.append(initSolution)
     for i in np.arange(iterations):
         if(i%100==0):
             print("i: ", i)
@@ -150,10 +149,9 @@ def localSearch(initSolution, iterations):
                     print(mesh.ids, mesh.hull.volume)
 
 def simulatedAnnealing(initSolution, iterations,startTemperature,beta):
-    currentSolution = initSolution
-    initMesh = Mesh(constructConvexHullFromIds(currentSolution),initSolution)
-    currentVolume = initMesh.hull.volume
-    meshes.append(initMesh)
+    currentSolution = initSolution.ids
+    currentVolume = initSolution.hull.volume
+    meshes.append(initSolution)
     temperature = startTemperature
     for i in np.arange(iterations):
         temperature = temperature*beta
@@ -188,7 +186,6 @@ def simulatedAnnealing(initSolution, iterations,startTemperature,beta):
 
 def generateNeighbour(pointIds):
     #always min 4 points needed
-    # TODO: Save lists
     #ADD POINTS
     newPointIds = list(pointIds)
     numberOfPointsToAdd = random.randint(0, 3)
@@ -206,21 +203,41 @@ def generateNeighbour(pointIds):
         newPointIds.pop(0)
     return newPointIds
 
+def searchInitSolution():
+    initSolutionFound = False
+    i=0
+    while True:
+        ids = []
+        while len(ids)!=4:
+            randomId = np.random.randint(0,numberOfPoints)
+            if randomId not in ids:
+                ids.append(randomId)
+        hull = constructConvexHullFromIds(ids)
+        mesh = Mesh(hull, ids)
+        if mesh.isEmpty():
+            print("Initial solution found after ", i, " iterations: ", mesh.ids)
+            return mesh
+        i+=1
+
 #random seed for repeatibity
-np.random.seed(5)
+# np.random.seed(5)
 
 #generate points
-numberOfPoints = 50
+numberOfPoints = 500
 inputPoints = [(10*np.random.random_sample(), 10*np.random.random_sample(), 10*np.random.random_sample()) for i in range(numberOfPoints)]
 [xCoordinates,yCoordinates,zCoordinates] = list(zip(*inputPoints))
 print(inputPoints)
+
 
 comparisonList = []
 meshes = []
 maxVolume = 0
 maxMesh = None
 
-localSearch([0,1,2,3],5000)
+initSolution = searchInitSolution()
+
+
+localSearch(initSolution,5000)
 comparisonList.append(maxMesh)
 print(maxMesh.ids, maxMesh.hull.volume)
 print(len(meshes))
@@ -229,7 +246,7 @@ meshes=[]
 maxVolume = 0
 maxMesh = None
 
-simulatedAnnealing([0,1,2,3],5000,50,0.999)
+simulatedAnnealing(initSolution,5000,50,0.999)
 comparisonList.append(maxMesh)
 print(maxMesh.ids, maxMesh.hull.volume)
 print(len(meshes))
