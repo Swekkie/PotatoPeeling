@@ -1,31 +1,17 @@
 from scipy.spatial import ConvexHull
 import numpy as np
 from mayavi.mlab import *
-
-def isIntersection(p1,p2,p3,pA,pB):
-    a1 = signedVolume(pA,p1,p2,p3)
-    a2 = signedVolume(pB,p1,p2,p3)
-    a3 = signedVolume(pA,pB,p1,p2)
-    a4 = signedVolume(pA,pB,p2,p3)
-    a5 = signedVolume(pA,pB,p3,p1)
-    if np.sign(a1)!=np.sign(a2) and np.sign(a3)==np.sign(a4) and  np.sign(a4)==np.sign(a5):
-        return True
-    else:
-        return False
-
-def signedVolume(a,b,c,d):
-    e1 = np.subtract(b,a)
-    e2 = np.subtract(c,a)
-    e3 = np.subtract(d,a)
-    cross = np.cross(e1,e2)
-    dot = np.dot(cross,e3)
-    return dot
+import random
+import math
 
 def constructConvexHullFromIds(givenPointIds):
     givenPoints = []
     for id in givenPointIds:
         givenPoints.append(inputPoints[id])
-    return ConvexHull(givenPoints)
+    try:
+        return ConvexHull(givenPoints)
+    except:
+        return None
 
 class Mesh:
     def __init__(self, hull, ids):
@@ -39,7 +25,7 @@ class Mesh:
     def plot(self):
         [x,y,z] = list(zip(*self.hull.points))
         #plot surface mesh
-        surface = triangular_mesh(x, y, z, self.hull.simplices,color=(0,0,1),opacity=0.75)
+        surface = triangular_mesh(x, y, z, self.hull.simplices,color=(0,0,1),opacity=0.5)
         #plot edges mesh
         edges = triangular_mesh(x, y, z, self.hull.simplices,representation='wireframe',color=(0,0,0))
         return (surface, edges)
@@ -52,11 +38,8 @@ class Mesh:
         return True
 
     def isInsideMesh(self,indexPoint):
-        point = inputPoints[indexPoint]
-        pA = np.asarray(point)
-        pA[2] = 10
-        pB = np.asarray(point)
-        pB[2] = -10
+        rayOrigin = inputPoints[indexPoint]
+        rayVector = (0,0,50)
         numberOfIntersections = 0
         for triangle in self.hull.simplices:
             index1 = self.ids[triangle[0]]
@@ -65,11 +48,37 @@ class Mesh:
             p1 = inputPoints[index1]
             p2 = inputPoints[index2]
             p3 = inputPoints[index3]
-            if isIntersection(p1, p2, p3, pA, pB):
+            if isIntersection(p1, p2, p3, rayOrigin, rayVector):
                 numberOfIntersections+=1
-        if numberOfIntersections == 0:
-            return False
+        if numberOfIntersections == 1:
+            return True
+        return False
+
+def isIntersection(p1,p2,p3,rayOrigin,rayVector):
+    #moller-trumbore algorithm
+    epsillon = 0.0000000000000001
+    edge1 = np.subtract(p2,p1)
+    edge2 = np.subtract(p3,p1)
+    h = np.cross(rayVector,edge2)
+    a = np.dot(edge1,h)
+
+    if a<epsillon and a>-epsillon:
+        return False
+
+    f = 1.0 / a
+    s = np.subtract(rayOrigin,p1)
+    u = f * (np.dot(s,h));
+    if u < 0.0 or u > 1.0:
+        return False
+    q = np.cross(s, edge1)
+    v = f * np.dot(rayVector, q)
+    if v < 0.0 or (u + v > 1.0):
+        return False
+    t = f * np.dot(edge2,q);
+    if t > epsillon:
         return True
+    else:
+        return False
 
 def constructConvexHulls():
     for firstPoint in np.arange(numberOfPoints):
@@ -78,22 +87,25 @@ def constructConvexHulls():
 
 def constructChonvexHullsHelper(pointIds):
     if len(pointIds)>3:
+        # print(pointIds)
         #calculate convex hull
         hull = constructConvexHullFromIds(pointIds)
-        if len(hull.points)==len(hull.vertices):
-            mesh = Mesh(hull,pointIds)
-            if mesh.isEmpty():
-                meshes.append(mesh)
-                #track maximum hull
-                global maxVolume
-                global maxMesh
-                if hull.volume > maxVolume:
-                    maxVolume = hull.volume
-                    maxMesh = mesh
+        if hull != None:
+            # print(pointIds)
+            if len(hull.points)==len(hull.vertices):
+                mesh = Mesh(hull,pointIds)
+                if mesh.isEmpty():
+                    meshes.append(mesh)
+                    #track maximum hull
+                    global maxVolume
+                    global maxMesh
+                    if hull.volume > maxVolume:
+                        maxVolume = hull.volume
+                        maxMesh = mesh
+                else:
+                    return
             else:
                 return
-        else:
-            return
     #construct 'child' hulls
     for i in np.arange(pointIds[-1]+1,numberOfPoints):
         newPointIds = list(pointIds)
@@ -101,44 +113,145 @@ def constructChonvexHullsHelper(pointIds):
         constructChonvexHullsHelper(newPointIds)
 
 @animate(delay = 1000)
-def anim():
+def anim(meshes):
+    (surface, edges) = meshes[0].plot()
     while True:
         for i in np.arange(len(meshes)):
             mesh = meshes[i]
             print('Updating scene: ',i, 'with volume: ', mesh.hull.volume)
+            mesh.printFaces()
             [x,y,z] = list(zip(*mesh.hull.points))
             surface.mlab_source.reset(x=x,y=y,z=z,triangles = mesh.hull.simplices)
             edges.mlab_source.reset(x=x,y=y,z=z,triangles = mesh.hull.simplices)
             yield
 
-#random seed for repeatiblity
-np.random.seed(25)
+def localSearch(initSolution, iterations):
+    currentSolution = initSolution
+    initMesh = Mesh(constructConvexHullFromIds(currentSolution),initSolution)
+    bestVolume = initMesh.hull.volume
+    meshes.append(initMesh)
+    for i in np.arange(iterations):
+        if(i%100==0):
+            print("i: ", i)
+        neighbourPointIds = generateNeighbour(currentSolution)
+        hull = constructConvexHullFromIds(neighbourPointIds)
+        if hull != None:
+            if len(hull.points)==len(hull.vertices):
+                mesh = Mesh(hull,neighbourPointIds)
+                if mesh.isEmpty() and mesh.hull.volume>bestVolume:
+                    meshes.append(mesh)
+                    #track maximum hull
+                    global maxVolume
+                    global maxMesh
+                    maxVolume = hull.volume
+                    bestVolume = hull.volume
+                    maxMesh = mesh
+                    currentSolution = mesh.ids
+                    print(mesh.ids, mesh.hull.volume)
+
+def simulatedAnnealing(initSolution, iterations,startTemperature,beta):
+    currentSolution = initSolution
+    initMesh = Mesh(constructConvexHullFromIds(currentSolution),initSolution)
+    currentVolume = initMesh.hull.volume
+    meshes.append(initMesh)
+    temperature = startTemperature
+    for i in np.arange(iterations):
+        temperature = temperature*beta
+        if(i%100==0):
+            print("i: ", i)
+        neighbourPointIds = generateNeighbour(currentSolution)
+        hull = constructConvexHullFromIds(neighbourPointIds)
+        if hull != None:
+            if len(hull.points)==len(hull.vertices):
+                mesh = Mesh(hull,neighbourPointIds)
+                if mesh.isEmpty():
+                    if hull.volume>currentVolume:
+                        meshes.append(mesh)
+                        currentVolume = hull.volume
+                        currentSolution = mesh.ids
+                        #track maximum hull
+                        global maxVolume
+                        global maxMesh
+                        if currentVolume>maxVolume:
+                            maxMesh = mesh
+                            maxVolume = hull.volume
+                            print(hull.volume, mesh.ids)
+                    else:
+                        volumeDifference = currentVolume-hull.volume
+                        if volumeDifference==0:
+                            continue
+                        p = math.exp(-(volumeDifference/temperature))
+                        if p > np.random.random_sample():
+                            meshes.append(mesh)
+                            currentVolume = hull.volume
+                            currentSolution = mesh.ids
+
+def generateNeighbour(pointIds):
+    #always min 4 points needed
+    # TODO: Save lists
+    #ADD POINTS
+    newPointIds = list(pointIds)
+    numberOfPointsToAdd = random.randint(0, 3)
+    possiblePointsToAdd = [x for x in list(range(numberOfPoints)) if x not in pointIds]
+    random.shuffle(possiblePointsToAdd)
+    random.shuffle(newPointIds)
+    for i in np.arange(numberOfPointsToAdd):
+        if i>len(possiblePointsToAdd)-1:
+            break
+        newPointIds.append(possiblePointsToAdd[i])
+
+    #delete points
+    numberOfPointsToRemove = random.randint(0, min(len(newPointIds)-4,3))
+    for i in np.arange(numberOfPointsToRemove):
+        newPointIds.pop(0)
+    return newPointIds
+
+#random seed for repeatibity
+np.random.seed(5)
 
 #generate points
-numberOfPoints = 10
-inputPoints = [(np.random.random_sample(), np.random.random_sample(), np.random.random_sample()) for i in range(numberOfPoints)]
+numberOfPoints = 50
+inputPoints = [(10*np.random.random_sample(), 10*np.random.random_sample(), 10*np.random.random_sample()) for i in range(numberOfPoints)]
 [xCoordinates,yCoordinates,zCoordinates] = list(zip(*inputPoints))
 print(inputPoints)
 
+comparisonList = []
 meshes = []
 maxVolume = 0
 maxMesh = None
-constructConvexHulls() #adds constructed hulls to meshes list
-meshes.sort(key=lambda x: x.hull.volume,reverse=True) #sort by decreasing volume
 
+localSearch([0,1,2,3],5000)
+comparisonList.append(maxMesh)
+print(maxMesh.ids, maxMesh.hull.volume)
 print(len(meshes))
-print(maxVolume)
-print(meshes[0].hull.volume)
+
+meshes=[]
+maxVolume = 0
+maxMesh = None
+
+simulatedAnnealing([0,1,2,3],5000,50,0.999)
+comparisonList.append(maxMesh)
+print(maxMesh.ids, maxMesh.hull.volume)
+print(len(meshes))
+
+# meshes=[]
+# maxVolume = 0
+# maxMesh = None
+# constructConvexHulls() #adds constructed hulls to meshes list, finds maxMesh and maxVolume
+# print(maxMesh.ids, maxMesh.hull.volume)
+# print(len(meshes))
+
+#meshes.sort(key=lambda x: x.hull.volume,reverse=True) #sort by decreasing volume
+
+
 #plot points
-points3d(xCoordinates,yCoordinates,zCoordinates,scale_factor=0.02,color=(1,0,0))
+points3d(xCoordinates,yCoordinates,zCoordinates,scale_factor=0.2,color=(1,0,0))
 #show axes
-axes(nb_labels=6,ranges=[0,1,0,1,0,1])
+axes(nb_labels=6,extent=[0,10,0,10,0,10])
 #plot point ids
 for i in range(numberOfPoints):
-    text3d(xCoordinates[i],yCoordinates[i],zCoordinates[i],str(i),scale=(0.05, 0.05, 0.05))
+    text3d(xCoordinates[i],yCoordinates[i],zCoordinates[i],str(i),scale=(0.5, 0.5, 0.5))
 
-(surface,edges) = maxMesh.plot()
+anim(comparisonList)
 
-
-anim()
 show()
