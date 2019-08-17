@@ -1,11 +1,13 @@
 package problem2D;
 
 import javax.naming.OperationNotSupportedException;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Polygon2D {
     public double area;
-    private double xMax, xMin, yMax, yMin;
+    public double xMax, xMin, yMax, yMin;
     public double longestEdge; // only used in generating init solution
 
     // points are listed in counter-clockwise direction
@@ -57,35 +59,46 @@ public class Polygon2D {
     }
 
     // checks if the polygon is convex and non intersecting
-    // does not tolerate angles of 180 degrees (3 points in one line)
     public boolean isConvex() {
-        boolean checkForNonIntersecting =  true;
-        for(int i = 0, j = point2DList.size() - 1; i < point2DList.size(); j = i++){
-            int k = (i + 1)% point2DList.size();
+        // find heighest point that is base point for testing non intersection
+        double ymax = 0;
+        int indexYmax = 0;
+        for (int i = 0; i < point2DList.size(); i++) {
+            Point2D p = point2DList.get(i);
+            if (p.getY() > ymax) {
+                ymax = p.getY();
+                indexYmax = i;
+            }
+        }
+
+        Point2D basePoint = point2DList.get(indexYmax);
+        int x = (indexYmax + 1) % point2DList.size();
+        int y = (indexYmax + 2) % point2DList.size();
+
+        for (int i = 0, j = point2DList.size() - 1; i < point2DList.size(); j = i++) {
+            int k = (i + 1) % point2DList.size();
             Point2D pointI = point2DList.get(i);
             Point2D pointJ = point2DList.get(j);
             Point2D pointK = point2DList.get(k);
 
-
-            // check for non intersecting
-            if(k+1>=point2DList.size()){
-                checkForNonIntersecting = false;
-            }
-
-            if(checkForNonIntersecting){
-                Point2D pointKplus1 = point2DList.get(k+1);
-                Point2D startPoint = point2DList.get(0);
-                if(!pointKplus1.isOnLeftOfVector(startPoint,pointK)) {
+            if (i < point2DList.size() - 3) {
+                Point2D pointX = point2DList.get(x);
+                Point2D pointY = point2DList.get(y);
+                if (!pointY.isOnLeftOfVector(basePoint, pointX))
                     return false;
-                }
-            }
+                x = (x + 1) % point2DList.size();
+                y = (y + 1) % point2DList.size();
 
+            }
             // check for convex
-            if(!pointK.isOnLeftOfVector(pointJ,pointI))
+            if (!pointK.isOnLeftOfVector(pointJ, pointI))
                 return false;
+
         }
 
         return true;
+
+
     }
 
     // Does not remove points that are part of the polygon
@@ -117,7 +130,7 @@ public class Polygon2D {
 
     // iterates through all points and updates the extrema
     // xMax, xMin, yMax, yMin
-    private void updateBoundaries() {
+    public void updateBoundaries() {
         xMax = Double.MIN_VALUE;
         yMax = Double.MIN_VALUE;
         xMin = Double.MAX_VALUE;
@@ -142,7 +155,7 @@ public class Polygon2D {
         // iterate counter clockwise through sides (side from point j to point i)
         // if point is on the left of all the vectors, it is inside of the polygon
         for (int i = 0, j = point2DList.size() - 1; i < point2DList.size(); j = i++) {
-            if (!p.isOnLeftOfVector(point2DList.get(j), point2DList.get(i))){
+            if (!p.isOnLeftOfVector(point2DList.get(j), point2DList.get(i))) {
                 return false;
             }
         }
@@ -150,8 +163,8 @@ public class Polygon2D {
     }
 
 
-    public boolean hasAtLeastThreePoints(){
-        return point2DList.size()>2;
+    public boolean hasAtLeastThreePoints() {
+        return point2DList.size() > 2;
     }
 
 
@@ -160,7 +173,7 @@ public class Polygon2D {
         if (!hasAtLeastThreePoints())
             return false;
         Set<Point2D> appeared = new HashSet<>();
-        for (Point2D p: point2DList) {
+        for (Point2D p : point2DList) {
             if (!appeared.add(p)) {
                 return false;
             }
