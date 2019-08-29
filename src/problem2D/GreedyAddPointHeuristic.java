@@ -4,12 +4,13 @@ import java.util.*;
 
 public class GreedyAddPointHeuristic {
 
-    private List<Point2D> inputPoints; // input set points
+    private List<Point2D> inputPoints;
     private List<Polygon2D> foundPolygons;
     private Polygon2D maxPolygon = null;
     private double maxArea = 0;
     private Random random;
-    private boolean triangles;
+    private boolean triangles; // if true this heuristic only constructs triangles
+    public long timeInit;
 
 
     public GreedyAddPointHeuristic(List<Point2D> inputPoints, boolean triangles) {
@@ -23,7 +24,11 @@ public class GreedyAddPointHeuristic {
     public List<Polygon2D> solve(long timeInMillis) {
         // search multiple times for empty, convex polygons
         long startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis()-startTime<timeInMillis){
+        int i = 0;
+        while(true){
+            if(System.currentTimeMillis()-startTime>timeInMillis)
+               break;
+            i++;
             Polygon2D polygon = searchForPolygonAttemptMaxArea();
             if (polygon != null && polygon.hasAtLeastThreePoints()) {
                 foundPolygons.add(polygon);
@@ -35,9 +40,33 @@ public class GreedyAddPointHeuristic {
         }
         long endTime = System.currentTimeMillis();
         System.out.println("GREEDY ADD HEURISTIC");
-        System.out.print("Max polygon: " + maxPolygon);
+        //System.out.print("Max polygon: " + maxPolygon);
         System.out.println("Area: " + maxPolygon.area);
-        System.out.println("Time (ms): " + (endTime - startTime));
+        System.out.println("Time (ms): " + (endTime - startTime)+ "    Iterations: " +i);
+        foundPolygons.add(0,maxPolygon); // used for init solution
+        return foundPolygons;
+    }
+
+    public List<Polygon2D> solveIterations(int iterations) {
+        // search multiple times for empty, convex polygons
+        long startTime = System.currentTimeMillis();
+        for(int i = 0; i<iterations; i++ ){
+            i++;
+            Polygon2D polygon = searchForPolygonAttemptMaxArea();
+            if (polygon != null && polygon.hasAtLeastThreePoints()) {
+                foundPolygons.add(polygon);
+                if(polygon.calculateArea()>maxArea){
+                    maxPolygon = polygon;
+                    maxArea = polygon.area;
+                }
+            }
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("GREEDY ADD INIT HEURISTIC");
+        //System.out.print("Max polygon: " + maxPolygon);
+        System.out.println("Area: " + maxPolygon.area);
+        System.out.println("Time (ms): " + (endTime - startTime)+ "    Iterations: " +iterations);
+        timeInit = endTime-startTime;
         foundPolygons.add(0,maxPolygon); // used for init solution
         return foundPolygons;
     }

@@ -8,6 +8,7 @@ public class Point2D {
     private double x, y;
     public int id;
     public double areaForGreedyAdd;
+
     public Point2D() {
         this.x = 0;
         this.y = 0;
@@ -82,13 +83,9 @@ public class Point2D {
 
     @Override
     public String toString() {
-        /*
-        DecimalFormat df = new DecimalFormat("#.00",
-                DecimalFormatSymbols.getInstance(Locale.US));
-        return df.format(x) + ";" + df.format(y) + " id: " + id;
-        */
         return x + ";" + y + " id: " + id;
     }
+
     public String toStringFile() {
 
         DecimalFormat df = new DecimalFormat("#.000000",

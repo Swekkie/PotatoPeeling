@@ -6,13 +6,16 @@ import java.util.*;
 public class Application {
 
     public static void main(String[] args) {
-        Random random = new Random(1);
-        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(50, random));
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints2());
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints3(3000,random),random);
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints4(3000,5,3,random),random);
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("tsp_input.txt",random),random);
-        //SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints6(3000,random),random);
+        Random random = new Random(0);
+        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints1(500, random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints2());
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints3(10,random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints4(5000,3,3,random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("5_912.txt",random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("2_629.txt",random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("8_1428.txt",random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints5("2_36.txt",random));
+//        SetOf2DPoints setOfPoints = new SetOf2DPoints(generatePoints6(1000,random));
 
         try {
             setOfPoints.writePointsToFile("D:/Masterproef/PotatoPeeling/pointset.txt");
@@ -20,28 +23,16 @@ public class Application {
             e.printStackTrace();
         }
 
-
-        // Chosen algorithm
+        // solve for chosen input set
+        // algorithm choesen in solve method
         setOfPoints.solve();
-
-        /*
-        Polygon2D initialSolution = setOfPoints.getInitialSolution1();
-        setOfPoints.localSearch(initialSolution,5000);
-        setOfPoints.printInfoFoundPolygonsToConsole();
-        */
-
-
-        //setOfPoints.printInfoFoundPolygonsToConsole();
 
         // write output
         try {
-            //setOfPoints.writeFiftyLargestPolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
             setOfPoints.writePolygonsToFile("D:/Masterproef/PotatoPeeling/foundpolygons.txt");
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static List<Point2D> generatePoints1(int numberOfPoints, Random random) {
@@ -208,7 +199,7 @@ public class Application {
             p.setX(p.getX() / factorX + random.nextDouble() / 100);
             p.setY(p.getY() / factorY + random.nextDouble() / 100);
         }
-
+        System.out.println(pointSet.size());
         return pointSet;
 
     }
@@ -254,6 +245,7 @@ public class Application {
             if (!badPoint)
                 tempList.add(p);
         }
+
         return tempList;
     }
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Edge {
-
     public int from;
     public int to;
     public List<Edge> validChildEdges;

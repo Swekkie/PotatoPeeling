@@ -7,7 +7,7 @@ public class StarshapedSolver {
     private List<Point2D> inputPoints; // input set points
     private List<Polygon2D> foundPolygons;
 
-    private Polygon2D maxPolygon = null;
+    public Polygon2D maxPolygon = null;
     private double maxArea = 0;
 
     public StarshapedSolver(List<Point2D> inputPoints){
@@ -31,7 +31,7 @@ public class StarshapedSolver {
 
         long endTime = System.currentTimeMillis();
         System.out.println("STAR-SHAPED");
-        System.out.print("Max polygon: " + maxPolygon);
+        //System.out.print("Max polygon: " + maxPolygon);
         System.out.println("Area: " + maxPolygon.area);
         System.out.println("Time (ms): " + (endTime-startTime));
         return foundPolygons;
@@ -71,13 +71,17 @@ public class StarshapedSolver {
 
         // search for path with heighest area
         List<Point2D> maximumEmptyPolygon = searchLongestPath(longestPathList, map, orderedPoints);
+
+
+        // add kernel point and construct polygon
         maximumEmptyPolygon.add(0, kernelPoint);
         Polygon2D polygon = new Polygon2D(maximumEmptyPolygon);
 
         foundPolygons.add(polygon);
 
+
         // track maxPolygon
-        if(polygon.calculateArea()>maxArea){
+        if (polygon.calculateArea() > maxArea) {
             maxPolygon = polygon;
             maxArea = polygon.area;
         }
@@ -100,19 +104,13 @@ public class StarshapedSolver {
             @Override
             public int compare(Point2D p1, Point2D p2) {
                 int a = Double.compare(p1.calculateAngleOfVectorFrom(kernelPoint), p2.calculateAngleOfVectorFrom(kernelPoint));
-                // TODO fix for if 3 points are in one line
-                // TODO: kernel point can have point above with same x and below (also 3 in a row)
-                if (a == 0)
-                    System.out.println("oeps");
+                if (a == 0) {
+                    System.out.println("Input set nog in general position");
+                    System.exit(1);
+                }
                 return a;
             }
         });
-
-        if(orderedPoints.get(0).calculateAngleOfVectorFrom(kernelPoint)==Double.NEGATIVE_INFINITY&&
-                orderedPoints.get(orderedPoints.size()-1).calculateAngleOfVectorFrom(kernelPoint)==Double.POSITIVE_INFINITY)
-            System.out.println("oeps special case");
-
-
     }
 
     private void constructDAG(VisibilityGraph2D vg) {
@@ -191,6 +189,9 @@ public class StarshapedSolver {
     private List<Point2D> searchLongestPath(List<LongestPathItem> items, HashMap<Edge,
             LongestPathItem> map, List<Point2D> orderedPoints) {
         List<Edge> maxAreaChain = null;
+
+        initItems(items);
+
         double maxArea = 0;
         for (int i = 0; i < items.size(); i++) {
             LongestPathItem item = items.get(i);
@@ -215,15 +216,19 @@ public class StarshapedSolver {
             }
 
         }
-
         List<Point2D> polygonPoints = new ArrayList<>();
         for (Edge e : maxAreaChain) {
             polygonPoints.add(orderedPoints.get(e.from));
         }
-
         polygonPoints.add(orderedPoints.get(maxAreaChain.get(maxAreaChain.size() - 1).to));
 
         return polygonPoints;
 
+    }
+
+    private void initItems(List<LongestPathItem> items) {
+        for(LongestPathItem i: items){
+            i.initItem();
+        }
     }
 }

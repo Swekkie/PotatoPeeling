@@ -3,6 +3,7 @@ package problem2D;
 import java.util.ArrayList;
 import java.util.List;
 
+// used in starshaped algorithm, longest path of dag
 public class LongestPathItem {
     public Edge edge;
     public double area;
@@ -16,10 +17,13 @@ public class LongestPathItem {
         this.chain = new ArrayList<>();
     }
 
-    public void firstVisit(){
-        visited = true;
+    public void initItem(){
         areaChain = area;
         chain.add(edge);
+    }
+
+    public void firstVisit(){
+        visited = true;
     }
 
     public void updateChain(LongestPathItem parent){

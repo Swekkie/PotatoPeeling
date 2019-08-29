@@ -45,15 +45,11 @@ public class LocalSearch {
 
             }
 
-            // cycle done, check if best polygon found this cycle is better than the maxPolygon
-            System.out.println("cycle check");
-            System.out.println(maxPolygon.area);
-
         }while(!timeReached);
 
         long endTime = System.currentTimeMillis();
         System.out.println("LOCAL SEARCH HEURISTIC");
-        System.out.print("Max polygon: " + maxPolygon);
+        //System.out.print("Max polygon: " + maxPolygon);
         System.out.println("Area: " + maxPolygon.area);
         System.out.println("Time (ms): " + (endTime - startTime));
         return foundPolygons;

@@ -47,15 +47,24 @@ public class Polygon2D {
         // shoelace algorithm
         double area = 0;
         int n = point2DList.size();
-        int j = n - 1;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0, j = n - 1; i < n; j=i++) {
             Point2D p1 = point2DList.get(i);
             Point2D p2 = point2DList.get(j);
             area += (p2.getX() + p1.getX()) * (p2.getY() - p1.getY());
-            j = i;
         }
         this.area = Math.abs(area / 2);
         return this.area;
+
+//        double area = 0;
+//        int n = point2DList.size();
+//        for(int i = 0,j=n-1; i<n;j=i++){
+//            Point2D p1 = point2DList.get(i);
+//            Point2D p2 = point2DList.get(j);
+//            area+= p2.getX()*p1.getY()-p1.getX()*p2.getY();
+//        }
+//        this.area = Math.abs(area / 2);
+//        return this.area;
+
     }
 
     // checks if the polygon is convex and non intersecting

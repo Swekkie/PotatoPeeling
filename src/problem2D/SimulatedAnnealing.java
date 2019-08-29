@@ -8,35 +8,40 @@ public class SimulatedAnnealing {
     private List<Polygon2D> foundPolygons;
     private Random random;
     private Polygon2D startingPolygon;
-    private Polygon2D maxPolygon = null;
+    public Polygon2D maxPolygon = null;
+    public int maxToDelete;
 
-    public SimulatedAnnealing(List<Point2D> inputPoints, Polygon2D startingPolygon) {
+    public SimulatedAnnealing(List<Point2D> inputPoints, Polygon2D startingPolygon, int maxToDelete) {
         this.inputPoints = inputPoints;
         this.random = new Random();
         this.startingPolygon = startingPolygon;
         this.foundPolygons = new ArrayList<>();
+        this.maxToDelete = maxToDelete;
         Collections.shuffle(inputPoints);
     }
 
     // SIMULATED ANNEALING
 
-    public List<Polygon2D> solve(double timeInMillis, double startTemp, double endTemp, double beta) {
+    public List<Polygon2D> solve(double timeInMillis, double startTemp, double endTemp, double alfa) {
         long startTime = System.currentTimeMillis();
         boolean timeReached = false;
         Polygon2D currentSolution = startingPolygon;
         maxPolygon = startingPolygon;
         double startArea = currentSolution.calculateArea();
         foundPolygons.add(currentSolution);
-        int iterations = 5 * inputPoints.size();
-        double coolingScheme[] = getCoolingSchemeGeometric(iterations, startTemp, endTemp, beta);
-
+        int iterations = 2*inputPoints.size();
+        int iter = 0;
+        double coolingScheme[] = getCoolingSchemeGeometric(iterations, startTemp, endTemp, alfa);
+        int reheat = 1;
         do {
             for(int i = 0; i<iterations; i++) {
+                //System.out.println(currentSolution.area);
+                iter++;
                 if (timeInMillis < System.currentTimeMillis() - startTime) {
                     timeReached = true;
                     break;
                 }
-                double temperature = coolingScheme[i];
+                double temperature = coolingScheme[i]/ reheat;
                 Polygon2D neighbour = generateNeighbour(currentSolution);
                 neighbour.calculateArea();
                 if (neighbour.area >= currentSolution.area) {
@@ -49,23 +54,27 @@ public class SimulatedAnnealing {
                     double areaDifference = currentSolution.area - neighbour.area;
                     double probability = Math.exp(-areaDifference / temperature);
                     //System.out.println("Prob:" + probability + "  Areadif" + areaDifference);
-                    if (random.nextDouble() < probability && neighbour.area > startArea / 2) { // kind of threshold accepting
+                    if (random.nextDouble() < probability
+                            && neighbour.area > startArea / 2 // kind of threshold accepting
+                    ) {
                         currentSolution = neighbour;
+                        foundPolygons.add(neighbour);
                     }
                 }
             }
-            System.out.println("cycle check" + maxPolygon.area);
+            reheat++;
+            //System.out.println("cycle check" + maxPolygon.area);
         }while(!timeReached);
 
         long endTime = System.currentTimeMillis();
         System.out.println("SIMULATED ANNEALING HEURISTIC");
-        System.out.print("Max polygon: " + maxPolygon);
+        //System.out.print("Max polygon: " + maxPolygon);
         System.out.println("Area: " + maxPolygon.area);
-        System.out.println("Time (ms): " + (endTime - startTime));
+        System.out.println("Time (ms): " + (endTime - startTime) + "    Iterations " + iter);
         return foundPolygons;
     }
 
-    private double[] getCoolingScheme(int iterations, double startTemp, double stopTemp, double beta) {
+    private double[] getCoolingScheme(int iterations, double startTemp, double stopTemp, double alfa) {
         double[] scheme = new double[iterations];
         for (int i = 0; i < iterations; i++) {
             scheme[i] = i * (stopTemp - startTemp) / iterations + startTemp;
@@ -74,12 +83,15 @@ public class SimulatedAnnealing {
         return scheme;
     }
 
-    private double[] getCoolingSchemeGeometric(int iterations, double startTemp, double stopTemp, double beta) {
+    private double[] getCoolingSchemeGeometric(int iterations, double startTemp, double stopTemp, double alfa) {
         double[] scheme = new double[iterations];
-        int numberOfTemps = (int) Math.ceil(Math.log10(stopTemp / startTemp) / Math.log10(beta));
+        int numberOfTemps = (int) Math.ceil(Math.log10(stopTemp / startTemp) / Math.log10(alfa));
         int iterationsPerTemp = iterations / numberOfTemps;
+        if(iterationsPerTemp == 0){
+            iterationsPerTemp = 1;
+        }
         for (int i = 0; i < iterations; i++) {
-            scheme[i] = startTemp * Math.pow(beta, i / iterationsPerTemp);
+            scheme[i] = startTemp * Math.pow(alfa, i / iterationsPerTemp);
         }
         return scheme;
     }
@@ -98,7 +110,6 @@ public class SimulatedAnnealing {
         int index = random.nextInt(pointListPolygon.size());
         // generate number of random number of points to remove
         // or less (after deletion we still want 3 points left)
-        int maxToDelete = 3; // 0-1-2-3
         int toDelete = random.nextInt(Math.min(maxToDelete + 1, pointListPolygon.size() - 2));
         // remove points
         for (int i = 0; i < toDelete; i++) {
@@ -138,7 +149,7 @@ public class SimulatedAnnealing {
         } else if (randomNumber < 0.66) {
             indexFrom = indexing[1];
             indexTo = indexing[2];
-        } else {
+        } else{
             indexFrom = indexing[2];
             indexTo = indexing[3];
         }

@@ -19,7 +19,9 @@ public class RandomAddPointHeuristic {
     public List<Polygon2D> solve(long timeInMillis) {
         // search multiple times for empty,convex polygons
         long startTime = System.currentTimeMillis();
+        int i = 0;
         while (System.currentTimeMillis() - startTime < timeInMillis) {
+            i++;
             Polygon2D polygon = searchForPolygonAttempt();
             if (polygon.hasAtLeastThreePoints()) {
                 foundPolygons.add(polygon);
@@ -33,9 +35,9 @@ public class RandomAddPointHeuristic {
         }
         long endTime = System.currentTimeMillis();
         System.out.println("RANDOM ADD HEURISTIC");
-        System.out.print("Max polygon: " + maxPolygon);
+        //System.out.print("Max polygon: " + maxPolygon);
         System.out.println("Area: " + maxPolygon.area);
-        System.out.println("Time (ms): " + (endTime - startTime));
+        System.out.println("Time (ms): " + (endTime - startTime) + "    Iterations: " +i);
         return foundPolygons;
     }
 
